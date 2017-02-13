@@ -1,6 +1,8 @@
 let settings = require('./settings');
 let utils = require('./utils.js');
 
+let audioPlayer = require('./audioPlayer');
+
 const pipeFacing = {
     'UP': 1,
     'DOWN': -1,
@@ -26,6 +28,8 @@ let level = {
     pipeBottomTexture: undefined,
 
     firstPipeFacing: pipeFacing.UP,
+
+    points: 0,
 
     nextPipeFacing: 0,
     placedPipesCount: 0,
@@ -106,11 +110,20 @@ let level = {
         // The bird is in the left/right boundaries of the first pipe
         if (bird.getRight() > left && bird.getLeft() < right) {
 
+            this.playerInsidePipe = true;
+
             // The bird is above the gap!
             if (bird.getTop() < this.pipes[0].gap.top || bird.getBottom() > this.pipes[0].gap.bottom) {
                 return true;
             }
+        } else if (this.playerInsidePipe) {
+            // Player has passed the pipe
+            audioPlayer.play(audioPlayer.audioFragments.POINT);
+            this.points++;
+            this.playerInsidePipe = false;
         }
+
+
 
         return false;
     },

@@ -4,6 +4,8 @@ const settings = {
      */
     assetFile: "assets/assets.json",
 
+    soundsPath: "assets/sounds/",
+
     /**
      * The area that is available above the water
      */
@@ -48,6 +50,16 @@ const settings = {
         'pipe': 'pipe.png',
         'pipeUp': 'pipe-up.png',
         'pipeDown': 'pipe-down.png',
+        'BIG_ZERO': 'font_big_0.png',
+        'BIG_ONE': 'font_big_1.png',
+        'BIG_TWO': 'font_big_2.png',
+        'BIG_THREE': 'font_big_3.png',
+        'BIG_FOUR': 'font_big_4.png',
+        'BIG_FIVE': 'font_big_5.png',
+        'BIG_SIX': 'font_big_6.png',
+        'BIG_SEVEN': 'font_big_7.png',
+        'BIG_EIGHT': 'font_big_8.png',
+        'BIG_NINE': 'font_big_9.png',
     }
 };
 

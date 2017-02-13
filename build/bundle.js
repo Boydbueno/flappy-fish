@@ -6,7 +6,44 @@
     game.start();
 })();
 
-},{"./game":4}],2:[function(require,module,exports){
+},{"./game":5}],2:[function(require,module,exports){
+'use strict';
+
+var settings = require('./settings');
+
+var audioPlayer = {
+
+    audioFragments: {
+        'FLAP': 'sfx_wing.ogg',
+        'HIT': 'sfx_hit.ogg',
+        'DIE': 'sfx_die.ogg',
+        'POINT': 'sfx_point.ogg'
+    },
+
+    _audio: [],
+
+    init: function init() {
+        // Todo: Maybe we need to wait with starting the game until these have been loaded
+        for (var key in this.audioFragments) {
+            this._audio[this.audioFragments[key]] = new Audio(settings.soundsPath + this.audioFragments[key]);
+        }
+    },
+    play: function play(audioFragment, callback) {
+        if (this._audio[audioFragment].currentTime > 0) {
+            this._audio[audioFragment].currentTime = 0;
+        }
+
+        this._audio[audioFragment].play();
+
+        if (typeof callback === 'function') setTimeout(callback, this._audio[audioFragment].duration * 1000);
+    }
+};
+
+audioPlayer.init();
+
+module.exports = audioPlayer;
+
+},{"./settings":7}],3:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings.js');
@@ -55,11 +92,13 @@ var background = {
 
 module.exports = background;
 
-},{"./settings.js":6,"./utils.js":8}],3:[function(require,module,exports){
+},{"./settings.js":7,"./utils.js":9}],4:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
 var utils = require('./utils');
+
+var audioPlayer = require('./audioPlayer');
 
 var bird = {
     container: undefined,
@@ -115,6 +154,8 @@ var bird = {
             this.velocity.y = 0;
         }
 
+        audioPlayer.play(audioPlayer.audioFragments.FLAP);
+
         this.velocity.y -= settings.birdFlapVelocity;
     },
     getElement: function getElement() {
@@ -136,13 +177,15 @@ var bird = {
 
 module.exports = bird;
 
-},{"./settings":6,"./utils":8}],4:[function(require,module,exports){
+},{"./audioPlayer":2,"./settings":7,"./utils":9}],5:[function(require,module,exports){
 'use strict';
 
 var setup = require('./setup');
 var background = require('./background');
 var level = require('./level');
 var bird = require('./bird');
+
+var audioPlayer = require('./audioPlayer');
 
 var game = {
 
@@ -164,6 +207,8 @@ var game = {
      * Initialize all required parts of the game
      */
     initialize: function initialize() {
+        var _this = this;
+
         this.stage = new PIXI.Container();
 
         background.initialize();
@@ -180,7 +225,10 @@ var game = {
         this.renderer.render(this.stage);
 
         // Todo: Add proper input handling
-        window.addEventListener("keyup", bird.flap.bind(bird), false);
+        window.addEventListener("keyup", function () {
+            if (_this.hasStopped) return;
+            bird.flap();
+        }, false);
 
         this.loop();
     },
@@ -209,10 +257,12 @@ var game = {
         // Ceiling collision
         if (bird.getTop() <= level.ceilingSprite.y + level.ceilingSprite.height) {
             this.stop();
+            this._playDieAudio();
         }
 
         if (level.pipeCollision(bird)) {
             this.stop();
+            this._playDieAudio();
         }
 
         this.renderer.render(this.stage);
@@ -233,16 +283,21 @@ var game = {
      */
     play: function play() {
         this.hasStopped = false;
+    },
+    _playDieAudio: function _playDieAudio() {
+        audioPlayer.play(audioPlayer.audioFragments.HIT, audioPlayer.play.bind(audioPlayer, audioPlayer.audioFragments.DIE));
     }
 };
 
 module.exports = game;
 
-},{"./background":2,"./bird":3,"./level":5,"./setup":7}],5:[function(require,module,exports){
+},{"./audioPlayer":2,"./background":3,"./bird":4,"./level":6,"./setup":8}],6:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
 var utils = require('./utils.js');
+
+var audioPlayer = require('./audioPlayer');
 
 var pipeFacing = {
     'UP': 1,
@@ -269,6 +324,8 @@ var level = {
     pipeBottomTexture: undefined,
 
     firstPipeFacing: pipeFacing.UP,
+
+    points: 0,
 
     nextPipeFacing: 0,
     placedPipesCount: 0,
@@ -347,10 +404,17 @@ var level = {
         // The bird is in the left/right boundaries of the first pipe
         if (bird.getRight() > left && bird.getLeft() < right) {
 
+            this.playerInsidePipe = true;
+
             // The bird is above the gap!
             if (bird.getTop() < this.pipes[0].gap.top || bird.getBottom() > this.pipes[0].gap.bottom) {
                 return true;
             }
+        } else if (this.playerInsidePipe) {
+            // Player has passed the pipe
+            audioPlayer.play(audioPlayer.audioFragments.POINT);
+
+            this.playerInsidePipe = false;
         }
 
         return false;
@@ -461,14 +525,16 @@ var level = {
 
 module.exports = level;
 
-},{"./settings":6,"./utils.js":8}],6:[function(require,module,exports){
-'use strict';
+},{"./audioPlayer":2,"./settings":7,"./utils.js":9}],7:[function(require,module,exports){
+"use strict";
 
 var settings = {
     /**
      * The location of the assets json
      */
     assetFile: "assets/assets.json",
+
+    soundsPath: "assets/sounds/",
 
     /**
      * The area that is available above the water
@@ -519,7 +585,7 @@ var settings = {
 
 module.exports = settings;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 
 var setup = {
@@ -541,7 +607,7 @@ var setup = {
 
 module.exports = setup;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -579,6 +645,6 @@ var utils = {
 
 module.exports = utils;
 
-},{"./settings":6}]},{},[1])
+},{"./settings":7}]},{},[1])
 
 //# sourceMappingURL=bundle.js.map

@@ -3,6 +3,8 @@ let background = require('./background');
 let level = require('./level');
 let bird = require('./bird');
 
+let audioPlayer = require('./audioPlayer');
+
 let game = {
 
     renderer: undefined,
@@ -38,7 +40,10 @@ let game = {
         this.renderer.render(this.stage);
 
         // Todo: Add proper input handling
-        window.addEventListener("keyup", bird.flap.bind(bird), false);
+        window.addEventListener("keyup", () => {
+            if (this.hasStopped) return;
+            bird.flap();
+        }, false);
 
         this.loop();
     },
@@ -66,10 +71,12 @@ let game = {
         // Ceiling collision
         if (bird.getTop() <= level.ceilingSprite.y + level.ceilingSprite.height) {
             this.stop();
+            this._playDieAudio();
         }
 
         if (level.pipeCollision(bird)) {
             this.stop();
+            this._playDieAudio();
         }
 
         this.renderer.render(this.stage);
@@ -88,6 +95,12 @@ let game = {
      */
     play() {
         this.hasStopped = false;
+    },
+
+    _playDieAudio() {
+        audioPlayer.play(audioPlayer.audioFragments.HIT,
+            audioPlayer.play.bind(audioPlayer, audioPlayer.audioFragments.DIE)
+        );
     }
 
 };

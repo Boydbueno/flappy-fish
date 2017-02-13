@@ -1,6 +1,8 @@
 let settings = require('./settings');
 let utils = require('./utils');
 
+let audioPlayer = require('./audioPlayer');
+
 let bird = {
     container: undefined,
     bird: undefined,
@@ -58,6 +60,8 @@ let bird = {
         if (settings.shouldBirdFlapResetVelocity ) {
             this.velocity.y = 0;
         }
+
+        audioPlayer.play(audioPlayer.audioFragments.FLAP);
 
         this.velocity.y -= settings.birdFlapVelocity;
     },
