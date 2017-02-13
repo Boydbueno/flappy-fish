@@ -17,7 +17,10 @@ var audioPlayer = {
         'FLAP': 'sfx_wing.ogg',
         'HIT': 'sfx_hit.ogg',
         'DIE': 'sfx_die.ogg',
-        'POINT': 'sfx_point.ogg'
+        'POINT': 'sfx_point.ogg',
+        'SWIM': 'sfx_blub.ogg',
+        'ENTER_WATER': 'sfx_water-enter.ogg',
+        'EXIT_WATER': 'sfx_water-exit.ogg'
     },
 
     _audio: [],
@@ -53,7 +56,7 @@ var background = {
     /**
      * The container that will contain all background tiles lined up
      */
-    container: undefined,
+    backgroundSprite: undefined,
 
     /**
      * The width of one background tile, is needed in some calculations/checks
@@ -61,23 +64,14 @@ var background = {
     skyTileWidth: 0,
 
     initialize: function initialize() {
-        this.container = new PIXI.Container();
         var skyTileTexture = utils.getTexture(settings.textures.background);
-        this.skyTileWidth = skyTileTexture.width;
-
-        this.container.y = settings.playableAreaAboveWater - skyTileTexture.height + utils.getTexture(settings.textures.ceiling).height;
-
-        utils.fillContainerWithWindowWidthTiles(this.container, skyTileTexture);
+        this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, window.innerWidth, skyTileTexture.height);
+        this.backgroundSprite.y = settings.playableAreaAboveWater - skyTileTexture.height + utils.getTexture(settings.textures.ceiling).height;
 
         return this;
     },
     loop: function loop() {
-        this.container.x += -settings.backgroundSpeed;
-
-        // By moving the whole background back at the right moment we don't have to worry about tracking individual tiles
-        if (this.container.x <= -this.skyTileWidth) {
-            this.container.x = 0;
-        }
+        this.backgroundSprite.tilePosition.x += -settings.backgroundSpeed;
     },
 
 
@@ -86,7 +80,7 @@ var background = {
      * @returns {Container}
      */
     getElement: function getElement() {
-        return this.container;
+        return this.backgroundSprite;
     }
 };
 
@@ -105,7 +99,7 @@ var bird = {
     bird: undefined,
     boundingBox: undefined,
     velocity: { x: 0, y: 0 },
-    isBelowWater: true,
+    isBelowWater: false,
 
     animationFrames: 4,
 
@@ -154,9 +148,17 @@ var bird = {
             this.velocity.y = 0;
         }
 
-        audioPlayer.play(audioPlayer.audioFragments.FLAP);
-
-        this.velocity.y -= settings.birdFlapVelocity;
+        if (this.isBelowWater) {
+            this._swim();
+        } else {
+            this._flap();
+        }
+    },
+    reset: function reset() {
+        this.bird.y = 150;
+        this.bird.x = 100;
+        this.velocity.x = 0;
+        this.velocity.y = 0;
     },
     getElement: function getElement() {
         return this.bird;
@@ -172,6 +174,28 @@ var bird = {
     },
     getLeft: function getLeft() {
         return this.bird.x - this.bird.width / 2;
+    },
+    enterWater: function enterWater() {
+        if (this.isBelowWater) return;
+        this.isBelowWater = true;
+
+        audioPlayer.play(audioPlayer.audioFragments.ENTER_WATER);
+    },
+    leaveWater: function leaveWater() {
+        if (!this.isBelowWater) return;
+        this.isBelowWater = false;
+
+        audioPlayer.play(audioPlayer.audioFragments.EXIT_WATER);
+    },
+    _flap: function _flap() {
+        audioPlayer.play(audioPlayer.audioFragments.FLAP);
+
+        this.velocity.y -= settings.birdFlapVelocity;
+    },
+    _swim: function _swim() {
+        audioPlayer.play(audioPlayer.audioFragments.SWIM);
+
+        this.velocity.y += settings.birdFlapVelocity;
     }
 };
 
@@ -180,17 +204,26 @@ module.exports = bird;
 },{"./audioPlayer":2,"./settings":7,"./utils":9}],5:[function(require,module,exports){
 'use strict';
 
+var _utils = require('./utils');
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 var setup = require('./setup');
 var background = require('./background');
 var level = require('./level');
 var bird = require('./bird');
 
 var audioPlayer = require('./audioPlayer');
+var settings = require('./settings');
+
 
 var game = {
 
     renderer: undefined,
     stage: undefined,
+    gameOverContainer: undefined,
 
     hasStopped: false,
 
@@ -217,18 +250,36 @@ var game = {
         level.initialize();
         this.stage.addChild(level.getElement());
 
-        // Spawn the pipes
-
         bird.initialize();
         this.stage.addChild(bird.getElement());
+
+        // Render the water
+        var waterTexture = utils.getTexture(settings.textures.WATER);
+        var waterSprite = new PIXI.extras.TilingSprite(waterTexture, window.innerWidth, settings.playableAreaBelowWater);
+        waterSprite.y = utils.getTexture(settings.textures.ceiling).height + settings.playableAreaAboveWater;
+        this.stage.addChild(waterSprite);
+
+        this.stage.addChild(this._createGameOverScreen());
 
         this.renderer.render(this.stage);
 
         // Todo: Add proper input handling
-        window.addEventListener("keyup", function () {
+        window.addEventListener("keyup", function (e) {
+            if (e.keyCode != 32) return; // Not spacebar
+            if (_this.hasStopped) {
+                _this._clickRestart();
+            } else {
+                bird.flap();
+            }
+        }, false);
+
+        if ("ontouchstart" in window) window.addEventListener("touchstart", function () {
             if (_this.hasStopped) return;
             bird.flap();
-        }, false);
+        });else window.addEventListener("mousedown", function () {
+            if (_this.hasStopped) return;
+            bird.flap();
+        });
 
         this.loop();
     },
@@ -249,23 +300,90 @@ var game = {
 
         // Check if the bird is below or underneath the water
         if (bird.getTop() < level.getWaterLevel() && bird.isBelowWater) {
-            bird.isBelowWater = false;
+            bird.leaveWater();
         } else if (bird.getTop() >= level.getWaterLevel() && !bird.isBelowWater) {
-            bird.isBelowWater = true;
+            bird.enterWater();
         }
 
         // Ceiling collision
         if (bird.getTop() <= level.ceilingSprite.y + level.ceilingSprite.height) {
-            this.stop();
-            this._playDieAudio();
+            this.gameOver();
+        }
+
+        // Floor collision
+        if (bird.getBottom() >= level.ceilingSprite.y + level.ceilingSprite.height + settings.playableAreaAboveWater + settings.playableAreaBelowWater) {
+            this.gameOver();
         }
 
         if (level.pipeCollision(bird)) {
-            this.stop();
-            this._playDieAudio();
+            this.gameOver();
         }
 
         this.renderer.render(this.stage);
+    },
+    gameOver: function gameOver() {
+        this.stop();
+        this._playDieAudio();
+
+        // Show game over screen
+        this.gameOverContainer.removeChild(this.scoreSprite);
+        this.gameOverContainer.removeChild(this.bestScoreSprite);
+
+        this.scoreSprite = utils.scoreToSprites(level.score, utils.scoreSize.SMALL);
+        this.scoreSprite.x = this.gameOverScreen.width / 2 - this.scoreSprite.width / 2 + 2;
+        this.scoreSprite.y = 93;
+
+        this.bestScoreSprite = utils.scoreToSprites(level.bestScore, utils.scoreSize.SMALL);
+        this.bestScoreSprite.x = this.gameOverScreen.width / 2 - this.bestScoreSprite.width / 2 + 2;
+        this.bestScoreSprite.y = 135;
+
+        this.gameOverContainer.addChild(this.scoreSprite);
+        this.gameOverContainer.addChild(this.bestScoreSprite);
+
+        this.gameOverContainer.visible = true;
+    },
+    _createGameOverScreen: function _createGameOverScreen() {
+        this.gameOverContainer = new PIXI.Container();
+        this.gameOverContainer.y = (level.ceilingSprite.height + settings.playableAreaAboveWater + settings.playableAreaBelowWater) / 2 - utils.getTexture(settings.textures.GAME_OVER).height / 2;
+        this.gameOverContainer.x = 150;
+
+        this.gameOverScreen = new PIXI.Sprite(utils.getTexture(settings.textures.GAME_OVER));
+
+        this.gameOverContainer.addChild(this.gameOverScreen);
+
+        this.scoreSprite = utils.scoreToSprites(level.score, utils.scoreSize.SMALL);
+        this.scoreSprite.x = this.gameOverScreen.width / 2 - this.scoreSprite.width / 2 + 2;
+        this.scoreSprite.y = 93;
+
+        this.bestScoreSprite = utils.scoreToSprites(level.bestScore, utils.scoreSize.SMALL);
+        this.bestScoreSprite.x = this.gameOverScreen.width / 2 - this.bestScoreSprite.width / 2 + 2;
+        this.bestScoreSprite.y = 135;
+
+        this.gameOverContainer.addChild(this.scoreSprite);
+        this.gameOverContainer.addChild(this.bestScoreSprite);
+
+        var restartButton = new PIXI.Sprite(utils.getTexture(settings.textures.RESTART));
+        restartButton.x = this.gameOverScreen.width / 2 - restartButton.width / 2 + 2;
+        restartButton.y = 190;
+        restartButton.interactive = true;
+        restartButton.buttonMode = true;
+        restartButton.defaultCursor = 'pointer';
+
+        restartButton.addListener("click", this._clickRestart.bind(this));
+
+        if ("ontouchstart" in window) {
+            restartButton.addListener("touchstart", this._clickRestart.bind(this));
+        }
+
+        this.gameOverContainer.addChild(restartButton);
+
+        this.gameOverContainer.visible = false;
+
+        return this.gameOverContainer;
+    },
+    _clickRestart: function _clickRestart() {
+        this.restart();
+        this.gameOverContainer.visible = false;
     },
 
 
@@ -281,7 +399,10 @@ var game = {
      * Continue the game after stopping
      * Make sure bird is no longer colliding or it'll stop again instantly
      */
-    play: function play() {
+    restart: function restart() {
+        level.reset();
+        bird.reset();
+
         this.hasStopped = false;
     },
     _playDieAudio: function _playDieAudio() {
@@ -291,7 +412,7 @@ var game = {
 
 module.exports = game;
 
-},{"./audioPlayer":2,"./background":3,"./bird":4,"./level":6,"./setup":8}],6:[function(require,module,exports){
+},{"./audioPlayer":2,"./background":3,"./bird":4,"./level":6,"./settings":7,"./setup":8,"./utils":9}],6:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -325,15 +446,19 @@ var level = {
 
     firstPipeFacing: pipeFacing.UP,
 
-    points: 0,
-
     nextPipeFacing: 0,
     placedPipesCount: 0,
 
+    playerInsidePipe: false,
+
     pipeGapSize: 100,
 
-    pipeDistance: 300,
+    pipeDistance: 400,
     firstPipeDistance: 800,
+
+    score: 0,
+    bestScore: 0,
+    scoreContainer: undefined,
 
     initialize: function initialize() {
         this.container = new PIXI.Container();
@@ -353,7 +478,30 @@ var level = {
 
         this.container.addChild(this.pipesContainer);
 
+        // Score
+        this.scoreContainer = new PIXI.Container();
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+
+        // Todo: Make vars
+        this.scoreContainer.x = 10;
+        this.scoreContainer.y = utils.getTexture(settings.textures.ceiling).height + 10;
+
+        this.container.addChild(this.scoreContainer);
+
         return this;
+    },
+    reset: function reset() {
+        this.score = 0;
+        this.scoreContainer.removeChild(this.scoreContainer.children[0]);
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+
+        this.pipesContainer.x = 0;
+        this.pipesContainer.children.splice(0);
+        this.pipes = [];
+        this.playerInsidePipe = false;
+        this.nextPipeFacing = this.firstPipeFacing;
+        this.placedPipesCount = 0;
+        this._initialPipes();
     },
     loop: function loop() {
         this.ceilingSprite.tilePosition.x += -settings.forwardSpeed;
@@ -398,8 +546,12 @@ var level = {
         // We only need to collide with the left side of the pipes and the top/bottom pieces
         // We know how far the pipe container has moved to the right, we can use this to get the left side
 
-        var left = this.pipesContainer.x + this.pipes[0].x;
-        var right = left + utils.getTexture(settings.textures.pipe).width;
+        // Because of square collision it can feel unfair when hitting the sides of the pipes while at an angle
+        // Which often happens when diving through the gap. To make things a bit fairer, added a small margin;
+        var collisionMargin = 2;
+
+        var left = this.pipesContainer.x + this.pipes[0].x + collisionMargin;
+        var right = left + utils.getTexture(settings.textures.pipe).width - collisionMargin;
 
         // The bird is in the left/right boundaries of the first pipe
         if (bird.getRight() > left && bird.getLeft() < right) {
@@ -412,8 +564,7 @@ var level = {
             }
         } else if (this.playerInsidePipe) {
             // Player has passed the pipe
-            audioPlayer.play(audioPlayer.audioFragments.POINT);
-
+            this._increaseScore();
             this.playerInsidePipe = false;
         }
 
@@ -478,8 +629,8 @@ var level = {
         }
 
         // Store the information of the gap position in the container object for easier collision checks
-        var top = (direction === pipeFacing.UP ? height - this.pipeGapSize : height) + this.ceilingSprite.height;
-        var bottom = (direction === pipeFacing.UP ? height : height + this.pipeGapSize) + this.ceilingSprite.height;
+        var top = (direction === pipeFacing.UP ? totalPlayHeight - height - this.pipeGapSize : height) + this.ceilingSprite.height;
+        var bottom = (direction === pipeFacing.UP ? totalPlayHeight - height : height + this.pipeGapSize) + this.ceilingSprite.height;
         container.gap = { top: top, bottom: bottom };
 
         return container;
@@ -518,8 +669,23 @@ var level = {
 
         return container;
     },
+    _increaseScore: function _increaseScore() {
+        audioPlayer.play(audioPlayer.audioFragments.POINT);
+        this.score++;
+
+        if (this.score > this.bestScore) this.bestScore = this.score;
+
+        // Because we put all digits inside one container, we only have to remove on child
+        this.scoreContainer.removeChild(this.scoreContainer.children[0]);
+
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+    },
     _getRandomPipeHeight: function _getRandomPipeHeight() {
-        return 280;
+        // Todo: Grab from settings somewhere
+        var minHeight = 280;
+        var maxHeight = 390;
+
+        return Math.random() * (maxHeight - minHeight) + minHeight;
     }
 };
 
@@ -539,9 +705,9 @@ var settings = {
     /**
      * The area that is available above the water
      */
-    playableAreaAboveWater: 280,
+    playableAreaAboveWater: 260,
 
-    playableAreaBelowWater: 280,
+    playableAreaBelowWater: 260,
 
     /**
      * The speed at which objects move towards the player
@@ -551,7 +717,7 @@ var settings = {
     /**
      * The speed at which the background moves
      */
-    backgroundSpeed: 1,
+    backgroundSpeed: 2,
 
     /**
      * The amount of gravity added to the velocity of the player while above the water
@@ -566,12 +732,12 @@ var settings = {
     /**
      * The amount of upward velocity is added to the player on 'flapping'.
      */
-    birdFlapVelocity: 4,
+    birdFlapVelocity: 4.5,
 
     /**
      * If vertical velocity of the player should be reset before applying the flap velocity
      */
-    shouldBirdFlapResetVelocity: false,
+    shouldBirdFlapResetVelocity: true,
 
     textures: {
         'background': 'sky.png',
@@ -579,7 +745,30 @@ var settings = {
         'ceiling': 'ceiling.png',
         'pipe': 'pipe.png',
         'pipeUp': 'pipe-up.png',
-        'pipeDown': 'pipe-down.png'
+        'pipeDown': 'pipe-down.png',
+        'WATER': 'water.png',
+        'GAME_OVER': 'scoreboard.png',
+        'RESTART': 'replay.png',
+        'BIG_0': 'font_big_0.png',
+        'BIG_1': 'font_big_1.png',
+        'BIG_2': 'font_big_2.png',
+        'BIG_3': 'font_big_3.png',
+        'BIG_4': 'font_big_4.png',
+        'BIG_5': 'font_big_5.png',
+        'BIG_6': 'font_big_6.png',
+        'BIG_7': 'font_big_7.png',
+        'BIG_8': 'font_big_8.png',
+        'BIG_9': 'font_big_9.png',
+        'SMALL_0': 'font_small_0.png',
+        'SMALL_1': 'font_small_1.png',
+        'SMALL_2': 'font_small_2.png',
+        'SMALL_3': 'font_small_3.png',
+        'SMALL_4': 'font_small_4.png',
+        'SMALL_5': 'font_small_5.png',
+        'SMALL_6': 'font_small_6.png',
+        'SMALL_7': 'font_small_7.png',
+        'SMALL_8': 'font_small_8.png',
+        'SMALL_9': 'font_small_9.png'
     }
 };
 
@@ -614,6 +803,11 @@ var settings = require('./settings');
 
 var utils = {
 
+    scoreSize: {
+        'SMALL': 0,
+        'BIG': 1
+    },
+
     /**
      * Get a texture from the pixi loader by name
      * @param name texture name, with extension
@@ -637,6 +831,22 @@ var utils = {
             tile.x = tile.width * i;
             container.addChild(tile);
         }
+    },
+    scoreToSprites: function scoreToSprites(score, size) {
+        var stringScore = score.toString();
+
+        var texturePrefix = size === this.scoreSize.BIG ? 'BIG_' : 'SMALL_';
+        var letterSpacing = size === this.scoreSize.BIG ? 25 : 10;
+
+        var digitsContainer = new PIXI.Container();
+
+        for (var i = 0, len = stringScore.length; i < len; i++) {
+            var digit = new PIXI.Sprite(this.getTexture(settings.textures[texturePrefix + stringScore.charAt(i)]));
+            digit.x = i * letterSpacing;
+            digitsContainer.addChild(digit);
+        }
+
+        return digitsContainer;
     },
     _getRequiredWidthTiles: function _getRequiredWidthTiles(tileWidth) {
         return Math.ceil(window.innerWidth / tileWidth) + 1;

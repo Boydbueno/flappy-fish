@@ -8,7 +8,7 @@ let bird = {
     bird: undefined,
     boundingBox: undefined,
     velocity: {x: 0, y: 0},
-    isBelowWater: true,
+    isBelowWater: false,
 
     animationFrames: 4,
 
@@ -61,9 +61,18 @@ let bird = {
             this.velocity.y = 0;
         }
 
-        audioPlayer.play(audioPlayer.audioFragments.FLAP);
+        if (this.isBelowWater) {
+            this._swim();
+        } else {
+            this._flap();
+        }
+    },
 
-        this.velocity.y -= settings.birdFlapVelocity;
+    reset() {
+        this.bird.y = 150;
+        this.bird.x = 100;
+        this.velocity.x = 0;
+        this.velocity.y = 0;
     },
 
     getElement() {
@@ -84,6 +93,32 @@ let bird = {
 
     getLeft() {
         return this.bird.x - this.bird.width / 2;
+    },
+
+    enterWater() {
+        if (this.isBelowWater) return;
+        this.isBelowWater = true;
+
+        audioPlayer.play(audioPlayer.audioFragments.ENTER_WATER);
+    },
+
+    leaveWater() {
+        if (!this.isBelowWater) return;
+        this.isBelowWater = false;
+
+        audioPlayer.play(audioPlayer.audioFragments.EXIT_WATER);
+    },
+
+    _flap() {
+        audioPlayer.play(audioPlayer.audioFragments.FLAP);
+
+        this.velocity.y -= settings.birdFlapVelocity;
+    },
+
+    _swim() {
+        audioPlayer.play(audioPlayer.audioFragments.SWIM);
+
+        this.velocity.y += settings.birdFlapVelocity;
     }
 };
 

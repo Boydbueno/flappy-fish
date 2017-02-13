@@ -29,15 +29,19 @@ let level = {
 
     firstPipeFacing: pipeFacing.UP,
 
-    points: 0,
-
     nextPipeFacing: 0,
     placedPipesCount: 0,
 
+    playerInsidePipe: false,
+
     pipeGapSize: 100,
 
-    pipeDistance: 300,
+    pipeDistance: 400,
     firstPipeDistance: 800,
+
+    score: 0,
+    bestScore: 0,
+    scoreContainer: undefined,
 
     initialize() {
         this.container = new PIXI.Container();
@@ -57,7 +61,31 @@ let level = {
 
         this.container.addChild(this.pipesContainer);
 
+        // Score
+        this.scoreContainer = new PIXI.Container();
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+
+        // Todo: Make vars
+        this.scoreContainer.x = 10;
+        this.scoreContainer.y = utils.getTexture(settings.textures.ceiling).height + 10;
+
+        this.container.addChild(this.scoreContainer);
+
         return this;
+    },
+
+    reset() {
+        this.score = 0;
+        this.scoreContainer.removeChild(this.scoreContainer.children[0]);
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+
+        this.pipesContainer.x = 0;
+        this.pipesContainer.children.splice(0);
+        this.pipes = [];
+        this.playerInsidePipe = false;
+        this.nextPipeFacing = this.firstPipeFacing;
+        this.placedPipesCount = 0;
+        this._initialPipes();
     },
 
     loop() {
@@ -78,7 +106,6 @@ let level = {
             }
 
         }
-
     },
 
     /**
@@ -104,8 +131,12 @@ let level = {
         // We only need to collide with the left side of the pipes and the top/bottom pieces
         // We know how far the pipe container has moved to the right, we can use this to get the left side
 
-        let left = this.pipesContainer.x + this.pipes[0].x;
-        let right = left + utils.getTexture(settings.textures.pipe).width;
+        // Because of square collision it can feel unfair when hitting the sides of the pipes while at an angle
+        // Which often happens when diving through the gap. To make things a bit fairer, added a small margin;
+        let collisionMargin = 2;
+
+        let left = this.pipesContainer.x + this.pipes[0].x + collisionMargin;
+        let right = left + utils.getTexture(settings.textures.pipe).width - collisionMargin;
         
         // The bird is in the left/right boundaries of the first pipe
         if (bird.getRight() > left && bird.getLeft() < right) {
@@ -118,12 +149,9 @@ let level = {
             }
         } else if (this.playerInsidePipe) {
             // Player has passed the pipe
-            audioPlayer.play(audioPlayer.audioFragments.POINT);
-            this.points++;
+            this._increaseScore();
             this.playerInsidePipe = false;
         }
-
-
 
         return false;
     },
@@ -193,8 +221,8 @@ let level = {
         }
 
         // Store the information of the gap position in the container object for easier collision checks
-        let top = (direction === pipeFacing.UP ? height - this.pipeGapSize : height) + this.ceilingSprite.height;
-        let bottom = (direction === pipeFacing.UP ? height : height + this.pipeGapSize) + this.ceilingSprite.height;
+        let top = (direction === pipeFacing.UP ? totalPlayHeight - height - this.pipeGapSize : height) + this.ceilingSprite.height;
+        let bottom = (direction === pipeFacing.UP ? totalPlayHeight - height : height + this.pipeGapSize) + this.ceilingSprite.height;
         container.gap = { top, bottom }
 
         return container;
@@ -236,8 +264,24 @@ let level = {
         return container;
     },
 
+    _increaseScore() {
+        audioPlayer.play(audioPlayer.audioFragments.POINT);
+        this.score++;
+
+        if (this.score > this.bestScore) this.bestScore = this.score;
+
+        // Because we put all digits inside one container, we only have to remove on child
+        this.scoreContainer.removeChild(this.scoreContainer.children[0]);
+
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+   },
+
     _getRandomPipeHeight() {
-        return 280;
+        // Todo: Grab from settings somewhere
+        let minHeight = 280;
+        let maxHeight = 390;
+
+        return Math.random() * (maxHeight - minHeight) + minHeight;
     },
 };
 

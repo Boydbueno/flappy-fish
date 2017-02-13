@@ -9,9 +9,9 @@ const settings = {
     /**
      * The area that is available above the water
      */
-    playableAreaAboveWater: 280,
+    playableAreaAboveWater: 260,
 
-    playableAreaBelowWater: 280,
+    playableAreaBelowWater: 260,
 
     /**
      * The speed at which objects move towards the player
@@ -21,7 +21,7 @@ const settings = {
     /**
      * The speed at which the background moves
      */
-    backgroundSpeed: 1,
+    backgroundSpeed: 2,
 
     /**
      * The amount of gravity added to the velocity of the player while above the water
@@ -36,12 +36,12 @@ const settings = {
     /**
      * The amount of upward velocity is added to the player on 'flapping'.
      */
-    birdFlapVelocity: 4,
+    birdFlapVelocity: 4.5,
 
     /**
      * If vertical velocity of the player should be reset before applying the flap velocity
      */
-    shouldBirdFlapResetVelocity: false,
+    shouldBirdFlapResetVelocity: true,
 
     textures: {
         'background': 'sky.png',
@@ -50,16 +50,29 @@ const settings = {
         'pipe': 'pipe.png',
         'pipeUp': 'pipe-up.png',
         'pipeDown': 'pipe-down.png',
-        'BIG_ZERO': 'font_big_0.png',
-        'BIG_ONE': 'font_big_1.png',
-        'BIG_TWO': 'font_big_2.png',
-        'BIG_THREE': 'font_big_3.png',
-        'BIG_FOUR': 'font_big_4.png',
-        'BIG_FIVE': 'font_big_5.png',
-        'BIG_SIX': 'font_big_6.png',
-        'BIG_SEVEN': 'font_big_7.png',
-        'BIG_EIGHT': 'font_big_8.png',
-        'BIG_NINE': 'font_big_9.png',
+        'WATER': 'water.png',
+        'GAME_OVER': 'scoreboard.png',
+        'RESTART': 'replay.png',
+        'BIG_0': 'font_big_0.png',
+        'BIG_1': 'font_big_1.png',
+        'BIG_2': 'font_big_2.png',
+        'BIG_3': 'font_big_3.png',
+        'BIG_4': 'font_big_4.png',
+        'BIG_5': 'font_big_5.png',
+        'BIG_6': 'font_big_6.png',
+        'BIG_7': 'font_big_7.png',
+        'BIG_8': 'font_big_8.png',
+        'BIG_9': 'font_big_9.png',
+        'SMALL_0': 'font_small_0.png',
+        'SMALL_1': 'font_small_1.png',
+        'SMALL_2': 'font_small_2.png',
+        'SMALL_3': 'font_small_3.png',
+        'SMALL_4': 'font_small_4.png',
+        'SMALL_5': 'font_small_5.png',
+        'SMALL_6': 'font_small_6.png',
+        'SMALL_7': 'font_small_7.png',
+        'SMALL_8': 'font_small_8.png',
+        'SMALL_9': 'font_small_9.png',
     }
 };
 

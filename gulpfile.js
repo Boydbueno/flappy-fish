@@ -6,6 +6,7 @@ var browserify = require('browserify');
 var watchify = require('watchify');
 var babel = require('babelify');
 var plumber = require('gulp-plumber');
+var browserSync = require('browser-sync').create();
 
 function compile(watch) {
     var bundler = watchify(browserify('./js/main.js', { debug: true }).transform(babel, {presets: ["es2015"]}));
@@ -36,6 +37,16 @@ function watch() {
 };
 
 gulp.task('build', function() { return compile(); });
-gulp.task('watch', function() { return watch(); });
+gulp.task('watch', function() {
+    return watch();
+});
+
+gulp.task('browser-sync', function() {
+    browserSync.init({
+        server: {
+            baseDir: "./"
+        }
+    });
+});
 
 gulp.task('default', ['watch']);

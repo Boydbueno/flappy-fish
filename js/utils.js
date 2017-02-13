@@ -2,6 +2,11 @@ let settings = require('./settings');
 
 let utils = {
 
+    scoreSize: {
+        'SMALL': 0,
+        'BIG': 1
+    },
+
     /**
      * Get a texture from the pixi loader by name
      * @param name texture name, with extension
@@ -24,6 +29,24 @@ let utils = {
             tile.x = tile.width * i;
             container.addChild(tile);
         }
+    },
+
+    scoreToSprites(score, size) {
+        let stringScore = score.toString();
+
+        let texturePrefix = size === this.scoreSize.BIG ? 'BIG_' : 'SMALL_';
+        let letterSpacing = size === this.scoreSize.BIG ? 25 : 10;
+
+
+        let digitsContainer = new PIXI.Container();
+
+        for (let i = 0, len = stringScore.length; i < len; i++) {
+            let digit = new PIXI.Sprite(this.getTexture(settings.textures[texturePrefix + stringScore.charAt(i)]));
+            digit.x = i * letterSpacing;
+            digitsContainer.addChild(digit)
+        }
+
+        return digitsContainer;
     },
 
     _getRequiredWidthTiles(tileWidth) {

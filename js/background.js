@@ -5,7 +5,7 @@ var background = {
     /**
      * The container that will contain all background tiles lined up
      */
-    container: undefined,
+    backgroundSprite: undefined,
 
     /**
      * The width of one background tile, is needed in some calculations/checks
@@ -13,24 +13,15 @@ var background = {
     skyTileWidth: 0,
 
     initialize() {
-        this.container = new PIXI.Container();
         let skyTileTexture = utils.getTexture(settings.textures.background)
-        this.skyTileWidth = skyTileTexture.width;
-
-        this.container.y = settings.playableAreaAboveWater - skyTileTexture.height + utils.getTexture(settings.textures.ceiling).height;
-
-        utils.fillContainerWithWindowWidthTiles(this.container, skyTileTexture);
+        this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, window.innerWidth, skyTileTexture.height);
+        this.backgroundSprite.y = settings.playableAreaAboveWater - skyTileTexture.height + utils.getTexture(settings.textures.ceiling).height;
 
         return this;
     },
 
     loop() {
-        this.container.x += -settings.backgroundSpeed;
-
-        // By moving the whole background back at the right moment we don't have to worry about tracking individual tiles
-        if (this.container.x <= -this.skyTileWidth) {
-            this.container.x = 0;
-        }
+        this.backgroundSprite.tilePosition.x += -settings.backgroundSpeed;
     },
 
     /**
@@ -38,7 +29,7 @@ var background = {
      * @returns {Container}
      */
     getElement() {
-        return this.container;
+        return this.backgroundSprite;
     }
 };
 

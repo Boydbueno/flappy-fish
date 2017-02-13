@@ -254,7 +254,7 @@ function earcut(data, holeIndices, dim) {
     return triangles;
 }
 
-// create a circular doubly linked list from polygon points in the specified winding order
+// create a circular doubly linked list from polygon score in the specified winding order
 function linkedList(data, start, end, dim, clockwise) {
     var i, last;
 
@@ -272,7 +272,7 @@ function linkedList(data, start, end, dim, clockwise) {
     return last;
 }
 
-// eliminate colinear or duplicate points
+// eliminate colinear or duplicate score
 function filterPoints(start, end) {
     if (!start) return start;
     if (!end) end = start;
@@ -330,7 +330,7 @@ function earcutLinked(ear, triangles, dim, minX, minY, size, pass) {
 
         // if we looped through the whole remaining polygon and can't find any more ears
         if (ear === stop) {
-            // try filtering points and slicing again
+            // try filtering score and slicing again
             if (!pass) {
                 earcutLinked(filterPoints(ear), triangles, dim, minX, minY, size, 1);
 
@@ -357,7 +357,7 @@ function isEar(ear) {
 
     if (area(a, b, c) >= 0) return false; // reflex, can't be an ear
 
-    // now make sure we don't have other points inside the potential ear
+    // now make sure we don't have other score inside the potential ear
     var p = ear.next.next;
 
     while (p !== ear.prev) {
@@ -386,7 +386,7 @@ function isEarHashed(ear, minX, minY, size) {
     var minZ = zOrder(minTX, minTY, minX, minY, size),
         maxZ = zOrder(maxTX, maxTY, minX, minY, size);
 
-    // first look for points inside the triangle in increasing z-order
+    // first look for score inside the triangle in increasing z-order
     var p = ear.nextZ;
 
     while (p && p.z <= maxZ) {
@@ -396,7 +396,7 @@ function isEarHashed(ear, minX, minY, size) {
         p = p.nextZ;
     }
 
-    // then look for points in decreasing z-order
+    // then look for score in decreasing z-order
     p = ear.prevZ;
 
     while (p && p.z >= minZ) {
@@ -445,7 +445,7 @@ function splitEarcut(start, triangles, dim, minX, minY, size) {
                 // split the polygon in two by the diagonal
                 var c = splitPolygon(a, b);
 
-                // filter colinear points around the cuts
+                // filter colinear score around the cuts
                 a = filterPoints(a, a.next);
                 c = filterPoints(c, c.next);
 
@@ -526,8 +526,8 @@ function findHoleBridge(hole, outerNode) {
 
     if (hx === qx) return m.prev; // hole touches outer segment; pick lower endpoint
 
-    // look for points inside the triangle of hole point, segment intersection and endpoint;
-    // if there are no points found, we have a valid connection;
+    // look for score inside the triangle of hole point, segment intersection and endpoint;
+    // if there are no score found, we have a valid connection;
     // otherwise choose the point of the minimum angle with the ray as connection point
 
     var stop = m,
@@ -683,7 +683,7 @@ function area(p, q, r) {
     return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 }
 
-// check if two points are equal
+// check if two score are equal
 function equals(p1, p2) {
     return p1.x === p2.x && p1.y === p2.y;
 }
@@ -3510,7 +3510,7 @@ process.umask = function() { return 0; };
 	}
 
 	/**
-	 * Creates an array containing the numeric code points of each Unicode
+	 * Creates an array containing the numeric code score of each Unicode
 	 * character in the string. While JavaScript uses UCS-2 internally,
 	 * this function will convert a pair of surrogate halves (each of which
 	 * UCS-2 exposes as separate characters) into a single code point,
@@ -3520,7 +3520,7 @@ process.umask = function() { return 0; };
 	 * @memberOf punycode.ucs2
 	 * @name decode
 	 * @param {String} string The Unicode input string (UCS-2).
-	 * @returns {Array} The new array of code points.
+	 * @returns {Array} The new array of code score.
 	 */
 	function ucs2decode(string) {
 		var output = [],
@@ -3549,11 +3549,11 @@ process.umask = function() { return 0; };
 	}
 
 	/**
-	 * Creates a string based on an array of numeric code points.
+	 * Creates a string based on an array of numeric code score.
 	 * @see `punycode.ucs2.decode`
 	 * @memberOf punycode.ucs2
 	 * @name encode
-	 * @param {Array} codePoints The array of numeric code points.
+	 * @param {Array} codePoints The array of numeric code score.
 	 * @returns {String} The new Unicode string (UCS-2).
 	 */
 	function ucs2encode(array) {
@@ -3649,9 +3649,9 @@ process.umask = function() { return 0; };
 		    /** Cached calculation results */
 		    baseMinusT;
 
-		// Handle the basic code points: let `basic` be the number of input code
-		// points before the last delimiter, or `0` if there is none, then copy
-		// the first basic code points to the output.
+		// Handle the basic code score: let `basic` be the number of input code
+		// score before the last delimiter, or `0` if there is none, then copy
+		// the first basic code score to the output.
 
 		basic = input.lastIndexOf(delimiter);
 		if (basic < 0) {
@@ -3667,7 +3667,7 @@ process.umask = function() { return 0; };
 		}
 
 		// Main decoding loop: start just after the last delimiter if any basic code
-		// points were copied; start at the beginning otherwise.
+		// score were copied; start at the beginning otherwise.
 
 		for (index = basic > 0 ? basic + 1 : 0; index < inputLength; /* no final expression */) {
 
@@ -3744,7 +3744,7 @@ process.umask = function() { return 0; };
 		    t,
 		    currentValue,
 		    output = [],
-		    /** `inputLength` will hold the number of code points in `input`. */
+		    /** `inputLength` will hold the number of code score in `input`. */
 		    inputLength,
 		    /** Cached calculation results */
 		    handledCPCountPlusOne,
@@ -3762,7 +3762,7 @@ process.umask = function() { return 0; };
 		delta = 0;
 		bias = initialBias;
 
-		// Handle the basic code points
+		// Handle the basic code score
 		for (j = 0; j < inputLength; ++j) {
 			currentValue = input[j];
 			if (currentValue < 0x80) {
@@ -3772,8 +3772,8 @@ process.umask = function() { return 0; };
 
 		handledCPCount = basicLength = output.length;
 
-		// `handledCPCount` is the number of code points that have been handled;
-		// `basicLength` is the number of basic code points.
+		// `handledCPCount` is the number of code score that have been handled;
+		// `basicLength` is the number of basic code score.
 
 		// Finish the basic string - if it is not empty - with a delimiter
 		if (basicLength) {
@@ -3783,7 +3783,7 @@ process.umask = function() { return 0; };
 		// Main encoding loop:
 		while (handledCPCount < inputLength) {
 
-			// All non-basic code points < n have been handled already. Find the next
+			// All non-basic code score < n have been handled already. Find the next
 			// larger one:
 			for (m = maxInt, j = 0; j < inputLength; ++j) {
 				currentValue = input[j];
@@ -3888,7 +3888,7 @@ process.umask = function() { return 0; };
 		'version': '1.4.1',
 		/**
 		 * An object of methods to convert from JavaScript's internal character
-		 * representation (UCS-2) to Unicode code points, and back.
+		 * representation (UCS-2) to Unicode code score, and back.
 		 * @see <https://mathiasbynens.be/notes/javascript-encoding>
 		 * @memberOf punycode
 		 * @type Object
@@ -10725,9 +10725,9 @@ var Graphics = function (_Container) {
         this.lineAlpha = alpha;
 
         if (this.currentPath) {
-            if (this.currentPath.shape.points.length) {
+            if (this.currentPath.shape.score.length) {
                 // halfway through a line? start a new one!
-                var shape = new _math.Polygon(this.currentPath.shape.points.slice(-2));
+                var shape = new _math.Polygon(this.currentPath.shape.score.slice(-2));
 
                 shape.closed = false;
 
@@ -10772,14 +10772,14 @@ var Graphics = function (_Container) {
 
 
     Graphics.prototype.lineTo = function lineTo(x, y) {
-        this.currentPath.shape.points.push(x, y);
+        this.currentPath.shape.score.push(x, y);
         this.dirty++;
 
         return this;
     };
 
     /**
-     * Calculate the points for a quadratic bezier curve and then draws it.
+     * Calculate the score for a quadratic bezier curve and then draws it.
      * Based on: https://stackoverflow.com/questions/785097/how-do-i-implement-a-bezier-curve-in-c
      *
      * @param {number} cpX - Control point x
@@ -10792,15 +10792,15 @@ var Graphics = function (_Container) {
 
     Graphics.prototype.quadraticCurveTo = function quadraticCurveTo(cpX, cpY, toX, toY) {
         if (this.currentPath) {
-            if (this.currentPath.shape.points.length === 0) {
-                this.currentPath.shape.points = [0, 0];
+            if (this.currentPath.shape.score.length === 0) {
+                this.currentPath.shape.score = [0, 0];
             }
         } else {
             this.moveTo(0, 0);
         }
 
         var n = 20;
-        var points = this.currentPath.shape.points;
+        var points = this.currentPath.shape.score;
         var xa = 0;
         var ya = 0;
 
@@ -10826,7 +10826,7 @@ var Graphics = function (_Container) {
     };
 
     /**
-     * Calculate the points for a bezier curve and then draws it.
+     * Calculate the score for a bezier curve and then draws it.
      *
      * @param {number} cpX - Control point x
      * @param {number} cpY - Control point y
@@ -10840,14 +10840,14 @@ var Graphics = function (_Container) {
 
     Graphics.prototype.bezierCurveTo = function bezierCurveTo(cpX, cpY, cpX2, cpY2, toX, toY) {
         if (this.currentPath) {
-            if (this.currentPath.shape.points.length === 0) {
-                this.currentPath.shape.points = [0, 0];
+            if (this.currentPath.shape.score.length === 0) {
+                this.currentPath.shape.score = [0, 0];
             }
         } else {
             this.moveTo(0, 0);
         }
 
-        var points = this.currentPath.shape.points;
+        var points = this.currentPath.shape.score;
 
         var fromX = points[points.length - 2];
         var fromY = points[points.length - 1];
@@ -10877,14 +10877,14 @@ var Graphics = function (_Container) {
 
     Graphics.prototype.arcTo = function arcTo(x1, y1, x2, y2, radius) {
         if (this.currentPath) {
-            if (this.currentPath.shape.points.length === 0) {
-                this.currentPath.shape.points.push(x1, y1);
+            if (this.currentPath.shape.score.length === 0) {
+                this.currentPath.shape.score.push(x1, y1);
             }
         } else {
             this.moveTo(x1, y1);
         }
 
-        var points = this.currentPath.shape.points;
+        var points = this.currentPath.shape.score;
         var fromX = points[points.length - 2];
         var fromY = points[points.length - 1];
         var a1 = fromY - y1;
@@ -10961,8 +10961,8 @@ var Graphics = function (_Container) {
         var startX = cx + Math.cos(startAngle) * radius;
         var startY = cy + Math.sin(startAngle) * radius;
 
-        // If the currentPath exists, take its points. Otherwise call `moveTo` to start a path.
-        var points = this.currentPath ? this.currentPath.shape.points : null;
+        // If the currentPath exists, take its score. Otherwise call `moveTo` to start a path.
+        var points = this.currentPath ? this.currentPath.shape.score : null;
 
         if (points) {
             if (points[points.length - 2] !== startX || points[points.length - 1] !== startY) {
@@ -10970,7 +10970,7 @@ var Graphics = function (_Container) {
             }
         } else {
             this.moveTo(startX, startY);
-            points = this.currentPath.shape.points;
+            points = this.currentPath.shape.score;
         }
 
         var theta = sweep / (segs * 2);
@@ -11018,7 +11018,7 @@ var Graphics = function (_Container) {
         this.fillAlpha = alpha;
 
         if (this.currentPath) {
-            if (this.currentPath.shape.points.length <= 2) {
+            if (this.currentPath.shape.score.length <= 2) {
                 this.currentPath.fill = this.filling;
                 this.currentPath.fillColor = this.fillColor;
                 this.currentPath.fillAlpha = this.fillAlpha;
@@ -11126,7 +11126,7 @@ var Graphics = function (_Container) {
 
         if (points instanceof _math.Polygon) {
             closed = points.closed;
-            points = points.points;
+            points = points.score;
         }
 
         if (!Array.isArray(points)) {
@@ -11396,7 +11396,7 @@ var Graphics = function (_Container) {
                     maxY = y + h > maxY ? y + h : maxY;
                 } else {
                     // POLY
-                    var points = shape.points;
+                    var points = shape.score;
                     var x2 = 0;
                     var y2 = 0;
                     var dx = 0;
@@ -11460,7 +11460,7 @@ var Graphics = function (_Container) {
     Graphics.prototype.drawShape = function drawShape(shape) {
         if (this.currentPath) {
             // check current path!
-            if (this.currentPath.shape.points.length <= 2) {
+            if (this.currentPath.shape.score.length <= 2) {
                 this.graphicsData.pop();
             }
         }
@@ -11800,10 +11800,10 @@ var CanvasGraphicsRenderer = function () {
             if (data.type === _const.SHAPES.POLY) {
                 context.beginPath();
 
-                this.renderPolygon(shape.points, shape.closed, context);
+                this.renderPolygon(shape.score, shape.closed, context);
 
                 for (var j = 0; j < data.holes.length; j++) {
-                    this.renderPolygon(data.holes[j].points, true, context);
+                    this.renderPolygon(data.holes[j].score, true, context);
                 }
 
                 if (data.fill) {
@@ -11949,7 +11949,7 @@ var CanvasGraphicsRenderer = function () {
     /**
      * Renders a polygon.
      *
-     * @param {PIXI.Point[]} points - The points to render
+     * @param {PIXI.Point[]} points - The score to render
      * @param {boolean} close - Should the polygon be closed
      * @param {CanvasRenderingContext2D} context - The rendering context to use
      */
@@ -11991,7 +11991,7 @@ _CanvasRenderer2.default.registerPlugin('graphics', CanvasGraphicsRenderer);
 exports.__esModule = true;
 exports.default = bezierCurveTo;
 /**
- * Calculate the points for a bezier curve and then draws it.
+ * Calculate the score for a bezier curve and then draws it.
  *
  * Ignored from docs since it is not directly exposed.
  *
@@ -12004,8 +12004,8 @@ exports.default = bezierCurveTo;
  * @param {number} cpY2 - Second Control point y
  * @param {number} toX - Destination point x
  * @param {number} toY - Destination point y
- * @param {number[]} [path=[]] - Path array to push points into
- * @return {number[]} Array of points of the curve
+ * @param {number[]} [path=[]] - Path array to push score into
+ * @return {number[]} Array of score of the curve
  */
 function bezierCurveTo(fromX, fromY, cpX, cpY, cpX2, cpY2, toX, toY) {
     var path = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : [];
@@ -12268,7 +12268,7 @@ var GraphicsRenderer = function (_ObjectRenderer) {
     GraphicsRenderer.prototype.getWebGLData = function getWebGLData(gl, type) {
         var webGLData = gl.data[gl.data.length - 1];
 
-        if (!webGLData || webGLData.points.length > 320000) {
+        if (!webGLData || webGLData.score.length > 320000) {
             webGLData = this.graphicsDataPool.pop() || new _WebGLGraphicsData2.default(this.renderer.gl, this.primitiveShader, this.renderer.state.attribsState);
 
             webGLData.reset(type);
@@ -12332,7 +12332,7 @@ var WebGLGraphicsData = function () {
     this.color = [0, 0, 0]; // color split!
 
     /**
-     * An array of points to draw
+     * An array of score to draw
      * @member {PIXI.Point[]}
      */
     this.points = [];
@@ -12497,7 +12497,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @param {object} webGLData - an object containing all the webGL-specific information to create this shape
  */
 function buildCircle(graphicsData, webGLData) {
-    // need to convert points to a nice regular data
+    // need to convert score to a nice regular data
     var circleData = graphicsData.shape;
     var x = circleData.x;
     var y = circleData.y;
@@ -12525,7 +12525,7 @@ function buildCircle(graphicsData, webGLData) {
         var g = color[1] * alpha;
         var b = color[2] * alpha;
 
-        var verts = webGLData.points;
+        var verts = webGLData.score;
         var indices = webGLData.indices;
 
         var vecPos = verts.length / 6;
@@ -12589,9 +12589,9 @@ function buildLine(graphicsData, webGLData) {
     // commenting this out fixes #711 and #1620
     // if (graphicsData.lineWidth%2)
     // {
-    //     for (i = 0; i < points.length; i++)
+    //     for (i = 0; i < score.length; i++)
     //     {
-    //         points[i] += 0.5;
+    //         score[i] += 0.5;
     //     }
     // }
 
@@ -12616,7 +12616,7 @@ function buildLine(graphicsData, webGLData) {
         points.push(midPointX, midPointY);
     }
 
-    var verts = webGLData.points;
+    var verts = webGLData.score;
     var indices = webGLData.indices;
     var length = points.length / 2;
     var indexCount = points.length;
@@ -12796,7 +12796,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @param {object} webGLData - an object containing all the webGL-specific information to create this shape
  */
 function buildPoly(graphicsData, webGLData) {
-    graphicsData.points = graphicsData.shape.points.slice();
+    graphicsData.points = graphicsData.shape.score.slice();
 
     var points = graphicsData.points;
 
@@ -12810,11 +12810,11 @@ function buildPoly(graphicsData, webGLData) {
 
             holeArray.push(points.length / 2);
 
-            points = points.concat(hole.points);
+            points = points.concat(hole.score);
         }
 
         // get first and last point.. figure out the middle!
-        var verts = webGLData.points;
+        var verts = webGLData.score;
         var indices = webGLData.indices;
 
         var length = points.length / 2;
@@ -12878,7 +12878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function buildRectangle(graphicsData, webGLData) {
     // --- //
-    // need to convert points to a nice regular data
+    // need to convert score to a nice regular data
     //
     var rectData = graphicsData.shape;
     var x = rectData.x;
@@ -12894,7 +12894,7 @@ function buildRectangle(graphicsData, webGLData) {
         var g = color[1] * alpha;
         var b = color[2] * alpha;
 
-        var verts = webGLData.points;
+        var verts = webGLData.score;
         var indices = webGLData.indices;
 
         var vertPos = verts.length / 6;
@@ -12972,7 +12972,7 @@ function buildRoundedRectangle(graphicsData, webGLData) {
     quadraticBezierCurve(x + width, y + radius, x + width, y, x + width - radius, y, recPoints);
     quadraticBezierCurve(x + radius, y, x, y, x, y + radius + 0.0000000001, recPoints);
 
-    // this tiny number deals with the issue that occurs when points overlap and earcut fails to triangulate the item.
+    // this tiny number deals with the issue that occurs when score overlap and earcut fails to triangulate the item.
     // TODO - fix this properly, this is not very elegant.. but it works for now.
 
     if (graphicsData.fill) {
@@ -12983,7 +12983,7 @@ function buildRoundedRectangle(graphicsData, webGLData) {
         var g = color[1] * alpha;
         var b = color[2] * alpha;
 
-        var verts = webGLData.points;
+        var verts = webGLData.score;
         var indices = webGLData.indices;
 
         var vecPos = verts.length / 6;
@@ -13015,7 +13015,7 @@ function buildRoundedRectangle(graphicsData, webGLData) {
 }
 
 /**
- * Calculate the points for a quadratic bezier curve. (helper function..)
+ * Calculate the score for a quadratic bezier curve. (helper function..)
  * Based on: https://stackoverflow.com/questions/785097/how-do-i-implement-a-bezier-curve-in-c
  *
  * Ignored from docs since it is not directly exposed.
@@ -13028,8 +13028,8 @@ function buildRoundedRectangle(graphicsData, webGLData) {
  * @param {number} cpY - Control point y
  * @param {number} toX - Destination point x
  * @param {number} toY - Destination point y
- * @param {number[]} [out=[]] - The output array to add points into. If not passed, a new array is created.
- * @return {number[]} an array of points
+ * @param {number[]} [out=[]] - The output array to add score into. If not passed, a new array is created.
+ * @return {number[]} an array of score
  */
 function quadraticBezierCurve(fromX, fromY, cpX, cpY, toX, toY) {
     var out = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : [];
@@ -14692,9 +14692,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  */
 var Polygon = function () {
     /**
-     * @param {PIXI.Point[]|number[]} points - This can be an array of Points
+     * @param {PIXI.Point[]|number[]} score - This can be an array of Points
      *  that form the polygon, a flat array of numbers that will be interpreted as [x,y, x,y, ...], or
-     *  the arguments passed can be all the points of the polygon e.g.
+     *  the arguments passed can be all the score of the polygon e.g.
      *  `new PIXI.Polygon(new PIXI.Point(), new PIXI.Point(), ...)`, or the arguments passed can be flat
      *  x,y values e.g. `new Polygon(x,y, x,y, x,y, ...)` where `x` and `y` are Numbers.
      */
@@ -14709,7 +14709,7 @@ var Polygon = function () {
             points = points[0];
         }
 
-        // if this is an array of points, convert it to a flat array of numbers
+        // if this is an array of score, convert it to a flat array of numbers
         if (points[0] instanceof _Point2.default) {
             var p = [];
 
@@ -14723,7 +14723,7 @@ var Polygon = function () {
         this.closed = true;
 
         /**
-         * An array of the points of this polygon
+         * An array of the score of this polygon
          *
          * @member {number[]}
          */
@@ -14752,7 +14752,7 @@ var Polygon = function () {
     };
 
     /**
-     * Closes the polygon, adding points if necessary.
+     * Closes the polygon, adding score if necessary.
      *
      */
 
@@ -15915,7 +15915,7 @@ var CanvasMaskManager = function () {
             var shape = data.shape;
 
             if (data.type === _const.SHAPES.POLY) {
-                var points = shape.points;
+                var points = shape.score;
 
                 context.moveTo(points[0], points[1]);
 
@@ -25321,7 +25321,7 @@ exports.default = createIndicesForQuads;
  * @return {Uint16Array} indices
  */
 function createIndicesForQuads(size) {
-    // the total number of indices in our array, there are 6 points per quad.
+    // the total number of indices in our array, there are 6 score per quad.
 
     var totalIndices = size * 6;
 
@@ -33846,13 +33846,13 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
- * The Plane allows you to draw a texture across several points and them manipulate these points
+ * The Plane allows you to draw a texture across several score and them manipulate these score
  *
  *```js
  * for (let i = 0; i < 20; i++) {
- *     points.push(new PIXI.Point(i * 50, 0));
+ *     score.push(new PIXI.Point(i * 50, 0));
  * };
- * let Plane = new PIXI.Plane(PIXI.Texture.fromImage("snake.png"), points);
+ * let Plane = new PIXI.Plane(PIXI.Texture.fromImage("snake.png"), score);
  *  ```
  *
  * @class
@@ -33995,13 +33995,13 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
- * The rope allows you to draw a texture across several points and them manipulate these points
+ * The rope allows you to draw a texture across several score and them manipulate these score
  *
  *```js
  * for (let i = 0; i < 20; i++) {
- *     points.push(new PIXI.Point(i * 50, 0));
+ *     score.push(new PIXI.Point(i * 50, 0));
  * };
- * let rope = new PIXI.Rope(PIXI.Texture.fromImage("snake.png"), points);
+ * let rope = new PIXI.Rope(PIXI.Texture.fromImage("snake.png"), score);
  *  ```
  *
  * @class
@@ -34020,11 +34020,11 @@ var Rope = function (_Mesh) {
         _classCallCheck(this, Rope);
 
         /*
-         * @member {PIXI.Point[]} An array of points that determine the rope
+         * @member {PIXI.Point[]} An array of score that determine the rope
          */
         var _this = _possibleConstructorReturn(this, _Mesh.call(this, texture));
 
-        _this.points = points;
+        _this.score = points;
 
         /*
          * @member {Float32Array} An array of vertices used to construct this rope.
@@ -34066,14 +34066,14 @@ var Rope = function (_Mesh) {
 
 
     Rope.prototype.refresh = function refresh() {
-        var points = this.points;
+        var points = this.score;
 
-        // if too little points, or texture hasn't got UVs set yet just move on.
+        // if too little score, or texture hasn't got UVs set yet just move on.
         if (points.length < 1 || !this._texture._uvs) {
             return;
         }
 
-        // if the number of points has changed we will need to recreate the arraybuffers
+        // if the number of score has changed we will need to recreate the arraybuffers
         if (this.vertices.length / 4 !== points.length) {
             this.vertices = new Float32Array(points.length * 4);
             this.uvs = new Float32Array(points.length * 4);
@@ -34152,7 +34152,7 @@ var Rope = function (_Mesh) {
 
 
     Rope.prototype.updateTransform = function updateTransform() {
-        var points = this.points;
+        var points = this.score;
 
         if (points.length < 1) {
             return;

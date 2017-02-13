@@ -6,7 +6,10 @@ let audioPlayer = {
         'FLAP': 'sfx_wing.ogg',
         'HIT': 'sfx_hit.ogg',
         'DIE': 'sfx_die.ogg',
-        'POINT': 'sfx_point.ogg'
+        'POINT': 'sfx_point.ogg',
+        'SWIM': 'sfx_blub.ogg',
+        'ENTER_WATER': 'sfx_water-enter.ogg',
+        'EXIT_WATER': 'sfx_water-exit.ogg',
     },
 
     _audio: [],
