@@ -101,57 +101,49 @@ var utils = require('./utils');
 var audioPlayer = require('./audioPlayer');
 
 var bird = {
-    container: undefined,
-    bird: undefined,
-    boundingBox: undefined,
-    velocity: { x: 0, y: 0 },
+    sprite: undefined,
+
+    /**
+     * The velocity of the bird
+     */
+    velocity: 0,
+
+    /**
+     * Bool if the bird is below the water
+     */
     isBelowWater: false,
 
+    /**
+     * The amount of frames the animation has
+     */
     animationFrames: 4,
 
+    birdTextureNamePrefix: 'bird_',
+    birdTextureNameSuffix: '.png',
+
     initialize: function initialize() {
-        this.container = new PIXI.Container();
-
-        var spriteFrames = [];
-        for (var i = 0; i < this.animationFrames; i++) {
-            spriteFrames.push(utils.getTexture('bird_' + i + '.png'));
-        }
-        this.bird = new PIXI.extras.AnimatedSprite(spriteFrames);
-
-        this.bird.animationSpeed = 0.2;
-        this.bird.play();
-
-        this.bird.anchor.x = 0.5;
-        this.bird.anchor.y = 0.5;
-
-        this.bird.y = 150;
-        this.bird.x = 100;
-
-        this.container.addChild(this.bird);
-
-        this.boundingBox = { x: 0, y: 0, width: 0, height: 0 };
-
-        return this.container;
+        this.sprite = this._setupBirdSprite();
+        return this.sprite;
     },
     loop: function loop() {
         if (this.isBelowWater) {
-            this.belowWater();
+            this.velocity -= settings.waterPushForce;
         } else {
-            this.aboveWater();
+            this.velocity += settings.gravity;
         }
 
-        this.bird.y += this.velocity.y;
-        this.bird.rotation = Math.atan2(this.velocity.y, settings.forwardSpeed);
+        this.sprite.y += this.velocity;
+        this.sprite.rotation = Math.atan2(this.velocity, settings.forwardSpeed);
     },
-    aboveWater: function aboveWater() {
-        this.velocity.y += settings.gravity;
-    },
-    belowWater: function belowWater() {
-        this.velocity.y -= settings.waterPushForce;
-    },
+
+
+    /**
+     * Flap behaviour, is different based on being below or above water
+     */
     flap: function flap() {
+        // Setting to easily test different flap behaviour
         if (settings.shouldBirdFlapResetVelocity) {
-            this.velocity.y = 0;
+            this.velocity = 0;
         }
 
         if (this.isBelowWater) {
@@ -160,45 +152,121 @@ var bird = {
             this._flap();
         }
     },
+
+
+    /**
+     * Reset the position and velocity of the bird
+     */
     reset: function reset() {
-        this.bird.y = 150;
-        this.bird.x = 100;
-        this.velocity.x = 0;
-        this.velocity.y = 0;
+        this.sprite.x = settings.birdStartPosition.x;
+        this.sprite.y = settings.birdStartPosition.y;
+        this.velocity = 0;
     },
+
+
+    /**
+     * Simple helper function to get the top position of the bird
+     * @returns {number}
+     */
     getTop: function getTop() {
-        return this.bird.y - this.bird.height / 2;
+        return this.sprite.y - this.sprite.height / 2;
     },
+
+
+    /**
+     * Simple helper function to get the bottom position of the bird
+     * @returns {number}
+     */
     getBottom: function getBottom() {
-        return this.bird.y + this.bird.height / 2;
+        return this.sprite.y + this.sprite.height / 2;
     },
+
+
+    /**
+     * Simple helper function to get the right position of the bird
+     * @returns {number}
+     */
     getRight: function getRight() {
-        return this.bird.x + this.bird.width / 2;
+        return this.sprite.x + this.sprite.width / 2;
     },
+
+
+    /**
+     * Simple helper function to get the left position of the bird
+     * @returns {number}
+     */
     getLeft: function getLeft() {
-        return this.bird.x - this.bird.width / 2;
+        return this.sprite.x - this.sprite.width / 2;
     },
+
+
+    /**
+     * When the bird enters the water
+     */
     enterWater: function enterWater() {
         if (this.isBelowWater) return;
         this.isBelowWater = true;
 
         audioPlayer.play(audioPlayer.audioFragments.ENTER_WATER);
     },
+
+
+    /**
+     * When the bird leaves the water
+     */
     leaveWater: function leaveWater() {
         if (!this.isBelowWater) return;
         this.isBelowWater = false;
 
         audioPlayer.play(audioPlayer.audioFragments.EXIT_WATER);
     },
+
+
+    /**
+     * Setup the bird sprite with its animations
+     * @returns {AnimatedSprite|*}
+     * @private
+     */
+    _setupBirdSprite: function _setupBirdSprite() {
+        var spriteFrames = [];
+        for (var i = 0; i < this.animationFrames; i++) {
+            spriteFrames.push(utils.getTexture(this.birdTextureNamePrefix + i + this.birdTextureNameSuffix));
+        }
+
+        var sprite = new PIXI.extras.AnimatedSprite(spriteFrames);
+
+        sprite.animationSpeed = settings.birdAnimationSpeed;
+        sprite.play();
+
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = 0.5;
+
+        sprite.x = settings.birdStartPosition.x;
+        sprite.y = settings.birdStartPosition.y;
+
+        return sprite;
+    },
+
+
+    /**
+     * The above water flap behaviour
+     * @private
+     */
     _flap: function _flap() {
         audioPlayer.play(audioPlayer.audioFragments.FLAP);
 
-        this.velocity.y -= settings.birdFlapVelocity;
+        this.velocity -= settings.birdFlapVelocity;
     },
+
+
+    /**
+     * The below water flap (aka swim) behaviour
+     * @private
+     */
     _swim: function _swim() {
         audioPlayer.play(audioPlayer.audioFragments.SWIM);
 
-        this.velocity.y += settings.birdFlapVelocity;
+        this.velocity += settings.birdFlapVelocity;
     }
 };
 
@@ -337,16 +405,16 @@ var game = {
 
         // Ceiling collision
         if (bird.getTop() <= level.ceilingSprite.y + level.ceilingSprite.height) {
-            this.gameOver();
+            this._gameOver();
         }
 
         // Floor collision
         if (bird.getBottom() >= level.ceilingSprite.y + level.ceilingSprite.height + settings.playableAreaAboveWater + settings.playableAreaBelowWater) {
-            this.gameOver();
+            this._gameOver();
         }
 
         if (level.pipeCollision(bird)) {
-            this.gameOver();
+            this._gameOver();
         }
     },
 
@@ -871,6 +939,13 @@ var settings = {
      * The amount of upward velocity is added to the player on 'flapping'.
      */
     birdFlapVelocity: 4.5,
+
+    birdAnimationSpeed: 0.2,
+
+    birdStartPosition: {
+        x: 100,
+        y: 150
+    },
 
     /**
      * If vertical velocity of the player should be reset before applying the flap velocity

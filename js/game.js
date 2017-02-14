@@ -121,16 +121,16 @@ let game = {
 
         // Ceiling collision
         if (bird.getTop() <= level.ceilingSprite.y + level.ceilingSprite.height) {
-            this.gameOver();
+            this._gameOver();
         }
 
         // Floor collision
         if (bird.getBottom() >= level.ceilingSprite.y + level.ceilingSprite.height + settings.playableAreaAboveWater + settings.playableAreaBelowWater) {
-            this.gameOver();
+            this._gameOver();
         }
 
         if (level.pipeCollision(bird)) {
-            this.gameOver();
+            this._gameOver();
         }
     },
 

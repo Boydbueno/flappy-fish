@@ -42,6 +42,13 @@ const settings = {
      */
     birdFlapVelocity: 4.5,
 
+    birdAnimationSpeed: 0.2,
+
+    birdStartPosition: {
+        x: 100,
+        y: 150,
+    },
+
     /**
      * If vertical velocity of the player should be reset before applying the flap velocity
      */
