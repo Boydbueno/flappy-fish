@@ -1137,7 +1137,7 @@ var setup = {
     loadAssets: function loadAssets(callback) {
         if (typeof callback !== 'function') throw new Error('Callback must be a function');
 
-        PIXI.loader.add("assets/assets.json").load(callback);
+        PIXI.loader.add(settings.assetFile).load(callback);
     }
 };
 
