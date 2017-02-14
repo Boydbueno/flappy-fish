@@ -1,8 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+var game = require('./game');
+
 (function () {
-    var game = require('./game');
     game.start();
 })();
 
@@ -46,7 +47,7 @@ audioPlayer.init();
 
 module.exports = audioPlayer;
 
-},{"./settings":7}],3:[function(require,module,exports){
+},{"./settings":8}],3:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings.js');
@@ -59,34 +60,39 @@ var background = {
     backgroundSprite: undefined,
 
     /**
-     * The width of one background tile, is needed in some calculations/checks
+     * Initialize the background
+     * @returns {PIXI.Sprite}
      */
-    skyTileWidth: 0,
-
     initialize: function initialize() {
         var skyTileTexture = utils.getTexture(settings.textures.background);
-        this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, window.innerWidth, skyTileTexture.height);
-        this.backgroundSprite.y = settings.playableAreaAboveWater - skyTileTexture.height + utils.getTexture(settings.textures.ceiling).height;
+        this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, settings.gameWidth, skyTileTexture.height);
+        this.backgroundSprite.y = this._getBackgroundSpriteYPosition(skyTileTexture.height);
 
-        return this;
+        return this.backgroundSprite;
     },
+
+
+    /**
+     * Update loop of the background
+     */
     loop: function loop() {
         this.backgroundSprite.tilePosition.x += -settings.backgroundSpeed;
     },
 
 
     /**
-     * Get the element that needs to be rendered
-     * @returns {Container}
+     * Get the y position for the background sprite
+     * @returns {Number}
+     * @private
      */
-    getElement: function getElement() {
-        return this.backgroundSprite;
+    _getBackgroundSpriteYPosition: function _getBackgroundSpriteYPosition(height) {
+        return settings.playableAreaAboveWater - height + utils.getTexture(settings.textures.ceiling).height;
     }
 };
 
 module.exports = background;
 
-},{"./settings.js":7,"./utils.js":9}],4:[function(require,module,exports){
+},{"./settings.js":8,"./utils.js":10}],4:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -125,7 +131,7 @@ var bird = {
 
         this.boundingBox = { x: 0, y: 0, width: 0, height: 0 };
 
-        return this;
+        return this.container;
     },
     loop: function loop() {
         if (this.isBelowWater) {
@@ -159,9 +165,6 @@ var bird = {
         this.bird.x = 100;
         this.velocity.x = 0;
         this.velocity.y = 0;
-    },
-    getElement: function getElement() {
-        return this.bird;
     },
     getTop: function getTop() {
         return this.bird.y - this.bird.height / 2;
@@ -201,30 +204,27 @@ var bird = {
 
 module.exports = bird;
 
-},{"./audioPlayer":2,"./settings":7,"./utils":9}],5:[function(require,module,exports){
+},{"./audioPlayer":2,"./settings":8,"./utils":10}],5:[function(require,module,exports){
 'use strict';
 
-var _utils = require('./utils');
-
-var utils = _interopRequireWildcard(_utils);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
 var setup = require('./setup');
+
+var gameOverScreen = require('./gameOverScreen');
+var audioPlayer = require('./audioPlayer');
+var settings = require('./settings');
+var utils = require('./utils');
+
 var background = require('./background');
 var level = require('./level');
 var bird = require('./bird');
 
-var audioPlayer = require('./audioPlayer');
-var settings = require('./settings');
-
-
 var game = {
-
     renderer: undefined,
     stage: undefined,
-    gameOverContainer: undefined,
 
+    /**
+     * Whether the game (loop) has stopped or not
+     */
     hasStopped: false,
 
     /**
@@ -240,46 +240,20 @@ var game = {
      * Initialize all required parts of the game
      */
     initialize: function initialize() {
-        var _this = this;
-
         this.stage = new PIXI.Container();
 
-        background.initialize();
-        this.stage.addChild(background.getElement());
+        this.stage.addChild(background.initialize());
+        this.stage.addChild(level.initialize());
+        this.stage.addChild(bird.initialize());
 
-        level.initialize();
-        this.stage.addChild(level.getElement());
+        this.stage.addChild(this._getWaterSprite());
 
-        bird.initialize();
-        this.stage.addChild(bird.getElement());
-
-        // Render the water
-        var waterTexture = utils.getTexture(settings.textures.WATER);
-        var waterSprite = new PIXI.extras.TilingSprite(waterTexture, window.innerWidth, settings.playableAreaBelowWater);
-        waterSprite.y = utils.getTexture(settings.textures.ceiling).height + settings.playableAreaAboveWater;
-        this.stage.addChild(waterSprite);
-
-        this.stage.addChild(this._createGameOverScreen());
+        var onRestartClick = this._clickRestart.bind(this);
+        this.stage.addChild(gameOverScreen.initialize(onRestartClick));
 
         this.renderer.render(this.stage);
 
-        // Todo: Add proper input handling
-        window.addEventListener("keyup", function (e) {
-            if (e.keyCode != 32) return; // Not spacebar
-            if (_this.hasStopped) {
-                _this._clickRestart();
-            } else {
-                bird.flap();
-            }
-        }, false);
-
-        if ("ontouchstart" in window) window.addEventListener("touchstart", function () {
-            if (_this.hasStopped) return;
-            bird.flap();
-        });else window.addEventListener("mousedown", function () {
-            if (_this.hasStopped) return;
-            bird.flap();
-        });
+        this._setEvents();
 
         this.loop();
     },
@@ -291,13 +265,69 @@ var game = {
     loop: function loop() {
         requestAnimationFrame(this.loop.bind(this));
 
-        // This basically causes the game to 'freeze'. This should change the updating to menu and such
+        // This causes the game loop to freeze. Is used when the players hits something and a menu is shown to _restart
         if (this.hasStopped) return;
 
         background.loop();
         level.loop();
         bird.loop();
 
+        this._handleCollision();
+
+        this.renderer.render(this.stage);
+    },
+
+
+    /**
+     * Trigger game over happening
+     * @private
+     */
+    _gameOver: function _gameOver() {
+        this._stop();
+        this._playDieAudio();
+
+        // Show game over screen
+        gameOverScreen.updateScores(level.score, level.bestScore);
+        gameOverScreen.show();
+    },
+
+
+    /**
+     * Function to be called when _restart is clicked from the game over screen
+     * @private
+     */
+    _clickRestart: function _clickRestart() {
+        this._restart();
+        gameOverScreen.hide();
+    },
+
+
+    /**
+     * Stop the game
+     * @private
+     */
+    _stop: function _stop() {
+        this.hasStopped = true;
+    },
+
+
+    /**
+     * Continue the game after stopping
+     * @private
+     */
+    _restart: function _restart() {
+        level.reset();
+        bird.reset();
+
+        this.hasStopped = false;
+    },
+
+
+    /**
+     * Handle collision between the bird and 'obstacles'
+     * @private
+     */
+    _handleCollision: function _handleCollision() {
         // Check if the bird is below or underneath the water
         if (bird.getTop() < level.getWaterLevel() && bird.isBelowWater) {
             bird.leaveWater();
@@ -318,101 +348,214 @@ var game = {
         if (level.pipeCollision(bird)) {
             this.gameOver();
         }
-
-        this.renderer.render(this.stage);
-    },
-    gameOver: function gameOver() {
-        this.stop();
-        this._playDieAudio();
-
-        // Show game over screen
-        this.gameOverContainer.removeChild(this.scoreSprite);
-        this.gameOverContainer.removeChild(this.bestScoreSprite);
-
-        this.scoreSprite = utils.scoreToSprites(level.score, utils.scoreSize.SMALL);
-        this.scoreSprite.x = this.gameOverScreen.width / 2 - this.scoreSprite.width / 2 + 2;
-        this.scoreSprite.y = 93;
-
-        this.bestScoreSprite = utils.scoreToSprites(level.bestScore, utils.scoreSize.SMALL);
-        this.bestScoreSprite.x = this.gameOverScreen.width / 2 - this.bestScoreSprite.width / 2 + 2;
-        this.bestScoreSprite.y = 135;
-
-        this.gameOverContainer.addChild(this.scoreSprite);
-        this.gameOverContainer.addChild(this.bestScoreSprite);
-
-        this.gameOverContainer.visible = true;
-    },
-    _createGameOverScreen: function _createGameOverScreen() {
-        this.gameOverContainer = new PIXI.Container();
-        this.gameOverContainer.y = (level.ceilingSprite.height + settings.playableAreaAboveWater + settings.playableAreaBelowWater) / 2 - utils.getTexture(settings.textures.GAME_OVER).height / 2;
-        this.gameOverContainer.x = 150;
-
-        this.gameOverScreen = new PIXI.Sprite(utils.getTexture(settings.textures.GAME_OVER));
-
-        this.gameOverContainer.addChild(this.gameOverScreen);
-
-        this.scoreSprite = utils.scoreToSprites(level.score, utils.scoreSize.SMALL);
-        this.scoreSprite.x = this.gameOverScreen.width / 2 - this.scoreSprite.width / 2 + 2;
-        this.scoreSprite.y = 93;
-
-        this.bestScoreSprite = utils.scoreToSprites(level.bestScore, utils.scoreSize.SMALL);
-        this.bestScoreSprite.x = this.gameOverScreen.width / 2 - this.bestScoreSprite.width / 2 + 2;
-        this.bestScoreSprite.y = 135;
-
-        this.gameOverContainer.addChild(this.scoreSprite);
-        this.gameOverContainer.addChild(this.bestScoreSprite);
-
-        var restartButton = new PIXI.Sprite(utils.getTexture(settings.textures.RESTART));
-        restartButton.x = this.gameOverScreen.width / 2 - restartButton.width / 2 + 2;
-        restartButton.y = 190;
-        restartButton.interactive = true;
-        restartButton.buttonMode = true;
-        restartButton.defaultCursor = 'pointer';
-
-        restartButton.addListener("click", this._clickRestart.bind(this));
-
-        if ("ontouchstart" in window) {
-            restartButton.addListener("touchstart", this._clickRestart.bind(this));
-        }
-
-        this.gameOverContainer.addChild(restartButton);
-
-        this.gameOverContainer.visible = false;
-
-        return this.gameOverContainer;
-    },
-    _clickRestart: function _clickRestart() {
-        this.restart();
-        this.gameOverContainer.visible = false;
     },
 
 
     /**
-     * Stop the game
+     * Play the audio for when the player dies
+     * @private
      */
-    stop: function stop() {
-        this.hasStopped = true;
-    },
-
-
-    /**
-     * Continue the game after stopping
-     * Make sure bird is no longer colliding or it'll stop again instantly
-     */
-    restart: function restart() {
-        level.reset();
-        bird.reset();
-
-        this.hasStopped = false;
-    },
     _playDieAudio: function _playDieAudio() {
         audioPlayer.play(audioPlayer.audioFragments.HIT, audioPlayer.play.bind(audioPlayer, audioPlayer.audioFragments.DIE));
+    },
+
+
+    /**
+     * Set the required events for interacting with the game
+     * @private
+     */
+    _setEvents: function _setEvents() {
+        var _this = this;
+
+        window.addEventListener("keyup", function (e) {
+            if (e.keyCode != 32) return; // Not spacebar
+            if (_this.hasStopped) {
+                _this._clickRestart();
+                return;
+            }
+            bird.flap();
+        }, false);
+
+        if ("ontouchstart" in window) {
+            window.addEventListener("touchstart", function () {
+                if (_this.hasStopped) return;
+                bird.flap();
+            });
+        } else {
+            window.addEventListener("mousedown", function () {
+                if (_this.hasStopped) return;
+                bird.flap();
+            });
+        }
+    },
+
+
+    /**
+     * Create and get the tiled sprite for the water
+     * @returns {TilingSprite|PIXI.TilingSprite|{enumerable, get}|*}
+     * @private
+     */
+    _getWaterSprite: function _getWaterSprite() {
+        var waterTexture = utils.getTexture(settings.textures.WATER);
+        var waterSprite = new PIXI.extras.TilingSprite(waterTexture, settings.gameWidth, settings.playableAreaBelowWater);
+        waterSprite.y = utils.getTexture(settings.textures.ceiling).height + settings.playableAreaAboveWater;
+
+        return waterSprite;
     }
 };
 
 module.exports = game;
 
-},{"./audioPlayer":2,"./background":3,"./bird":4,"./level":6,"./settings":7,"./setup":8,"./utils":9}],6:[function(require,module,exports){
+},{"./audioPlayer":2,"./background":3,"./bird":4,"./gameOverScreen":6,"./level":7,"./settings":8,"./setup":9,"./utils":10}],6:[function(require,module,exports){
+'use strict';
+
+var settings = require('./settings');
+var utils = require('./utils');
+
+var gameOverScreen = {
+
+    /**
+     * The callback when the _restart button is clicked
+     */
+    onClickRestart: undefined,
+
+    /**
+     * The container that will hold the game over container
+     */
+    container: undefined,
+
+    /**
+     * The container that will hold the the scores and the game over sprite
+     */
+    gameOverContainer: undefined,
+
+    scoreYPosition: 93,
+    bestScoreYPosition: 135,
+    restartButtonYPosition: 190,
+    gameOverContainerXPosition: 150,
+
+    /**
+     * Because the score box is not perfectly centered we add some offset
+     */
+    elementsXOffset: 2,
+
+    /**
+     * Create the game over screen, should only be called once
+     */
+    initialize: function initialize(callback) {
+        this._setRestartCallback(callback);
+
+        this.container = new PIXI.Container();
+
+        this.container.y = this._getContainerYPosition();
+        this.container.x = this.gameOverContainerXPosition;
+
+        this.gameOverContainer = new PIXI.Sprite(utils.getTexture(settings.textures.GAME_OVER));
+
+        this._renderScores(0, 0);
+
+        var restartButton = new PIXI.Sprite(utils.getTexture(settings.textures.RESTART));
+        restartButton.x = this.gameOverContainer.width / 2 - restartButton.width / 2 + this.elementsXOffset;
+        restartButton.y = this.restartButtonYPosition;
+        restartButton.interactive = true;
+        restartButton.buttonMode = true;
+        restartButton.defaultCursor = 'pointer';
+
+        restartButton.addListener("click", this.onClickRestart);
+
+        if ("ontouchstart" in window) {
+            restartButton.addListener("touchstart", this.onClickRestart);
+        }
+
+        this.gameOverContainer.addChild(restartButton);
+
+        this.container.addChild(this.gameOverContainer);
+
+        this.hide();
+
+        return this.container;
+    },
+
+
+    /**
+     * Update the game over screen with the new scores
+     */
+    updateScores: function updateScores(score, bestScore) {
+        this._clearScores();
+        this._renderScores(score, bestScore);
+    },
+
+
+    /**
+     * Hide the game over screen
+     */
+    hide: function hide() {
+        this.gameOverContainer.visible = false;
+    },
+
+
+    /**
+     * Show the game over screen
+     */
+    show: function show() {
+        this.gameOverContainer.visible = true;
+    },
+
+
+    /**
+     * Set the callback for when the _restart button has been pressed
+     * @param callback
+     * @private
+     */
+    _setRestartCallback: function _setRestartCallback(callback) {
+        if (typeof callback !== 'function') throw new Error('Supplied callback is not a function');
+
+        this.onClickRestart = callback;
+    },
+
+
+    /**
+     * @param score
+     * @param bestScore
+     * @private
+     */
+    _renderScores: function _renderScores(score, bestScore) {
+        this.scoreSprite = utils.scoreToSprites(score, utils.scoreSize.SMALL);
+        this.scoreSprite.x = this.gameOverContainer.width / 2 - this.scoreSprite.width / 2 + this.elementsXOffset;
+        this.scoreSprite.y = this.scoreYPosition;
+
+        this.bestScoreSprite = utils.scoreToSprites(bestScore, utils.scoreSize.SMALL);
+        this.bestScoreSprite.x = this.gameOverContainer.width / 2 - this.bestScoreSprite.width / 2 + this.elementsXOffset;
+        this.bestScoreSprite.y = this.bestScoreYPosition;
+
+        this.gameOverContainer.addChild(this.scoreSprite);
+        this.gameOverContainer.addChild(this.bestScoreSprite);
+    },
+
+
+    /**
+     * @private
+     */
+    _clearScores: function _clearScores() {
+        this.gameOverContainer.removeChild(this.scoreSprite);
+        this.gameOverContainer.removeChild(this.bestScoreSprite);
+    },
+
+
+    /**
+     * @returns {number}
+     * @private
+     */
+    _getContainerYPosition: function _getContainerYPosition() {
+        var ceilingHeight = utils.getTexture(settings.textures.ceiling).height;
+        var gameOverScreenHeight = utils.getTexture(settings.textures.GAME_OVER).height;
+        return (ceilingHeight + settings.playableAreaAboveWater + settings.playableAreaBelowWater) / 2 - gameOverScreenHeight / 2;
+    }
+};
+
+module.exports = gameOverScreen;
+
+},{"./settings":8,"./utils":10}],7:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -488,7 +631,7 @@ var level = {
 
         this.container.addChild(this.scoreContainer);
 
-        return this;
+        return this.container;
     },
     reset: function reset() {
         this.score = 0;
@@ -529,15 +672,6 @@ var level = {
     getWaterLevel: function getWaterLevel() {
         return settings.playableAreaAboveWater;
     },
-
-
-    /**
-     * Get the element to render
-     * @returns {undefined|*}
-     */
-    getElement: function getElement() {
-        return this.container;
-    },
     pipeCollision: function pipeCollision(bird) {
 
         // We will check if the bird is colliding with the first pipe
@@ -573,20 +707,20 @@ var level = {
     _createCeiling: function _createCeiling() {
         var ceilingTexture = utils.getTexture(settings.textures.ceiling);
 
-        this.ceilingSprite = new PIXI.extras.TilingSprite(ceilingTexture, window.innerWidth, ceilingTexture.height);
+        this.ceilingSprite = new PIXI.extras.TilingSprite(ceilingTexture, settings.gameWidth, ceilingTexture.height);
 
         return this.ceilingSprite;
     },
     _createFloor: function _createFloor() {
         var floorTexture = utils.getTexture(settings.textures.floor);
 
-        this.floorSprite = new PIXI.extras.TilingSprite(floorTexture, window.innerWidth, floorTexture.height);
+        this.floorSprite = new PIXI.extras.TilingSprite(floorTexture, settings.gameWidth, floorTexture.height);
         this.floorSprite.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater + utils.getTexture(settings.textures.ceiling).height;
 
         return this.floorSprite;
     },
     _initialPipes: function _initialPipes() {
-        var startingPipesCount = Math.ceil(window.innerWidth / this.pipeDistance);
+        var startingPipesCount = Math.ceil(settings.gameWidth / this.pipeDistance);
 
         for (var i = 0; i < startingPipesCount; i++) {
             var pipe = this._createPipe(this._getRandomPipeHeight(), this.nextPipeFacing);
@@ -691,7 +825,7 @@ var level = {
 
 module.exports = level;
 
-},{"./audioPlayer":2,"./settings":7,"./utils.js":9}],7:[function(require,module,exports){
+},{"./audioPlayer":2,"./settings":8,"./utils.js":10}],8:[function(require,module,exports){
 "use strict";
 
 var settings = {
@@ -708,6 +842,10 @@ var settings = {
     playableAreaAboveWater: 260,
 
     playableAreaBelowWater: 260,
+
+    gameWidth: 0,
+
+    gameOverScreenPosition: { x: 0, y: 0 },
 
     /**
      * The speed at which objects move towards the player
@@ -739,6 +877,8 @@ var settings = {
      */
     shouldBirdFlapResetVelocity: true,
 
+    ceilingSpriteHeight: 0,
+
     textures: {
         'background': 'sky.png',
         'floor': 'land.png',
@@ -769,17 +909,29 @@ var settings = {
         'SMALL_7': 'font_small_7.png',
         'SMALL_8': 'font_small_8.png',
         'SMALL_9': 'font_small_9.png'
+    },
+
+    init: function init() {
+        this.gameWidth = window.innerWidth;
     }
 };
 
+settings.init();
+
 module.exports = settings;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 
+var settings = require('./settings');
+
 var setup = {
+    /**
+     * Set up the renderer
+     * @returns {PIXI.WebGLRenderer|PIXI.CanvasRenderer}
+     */
     renderer: function renderer() {
-        var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+        var renderer = PIXI.autoDetectRenderer(settings.gameWidth, window.innerHeight);
         renderer.view.style.position = "absolute";
         renderer.view.style.display = "block";
         renderer.backgroundColor = 0x4ec0ca;
@@ -789,14 +941,22 @@ var setup = {
 
         return renderer;
     },
+
+
+    /**
+     * Load the assets
+     * @param callback action to perform after assets have been loaded
+     */
     loadAssets: function loadAssets(callback) {
+        if (typeof callback !== 'function') throw new Error('Callback must be a function');
+
         PIXI.loader.add("assets/assets.json").load(callback);
     }
 };
 
 module.exports = setup;
 
-},{}],9:[function(require,module,exports){
+},{"./settings":8}],10:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -849,12 +1009,12 @@ var utils = {
         return digitsContainer;
     },
     _getRequiredWidthTiles: function _getRequiredWidthTiles(tileWidth) {
-        return Math.ceil(window.innerWidth / tileWidth) + 1;
+        return Math.ceil(settings.gameWidth / tileWidth) + 1;
     }
 };
 
 module.exports = utils;
 
-},{"./settings":7}]},{},[1])
+},{"./settings":8}]},{},[1])
 
 //# sourceMappingURL=bundle.js.map

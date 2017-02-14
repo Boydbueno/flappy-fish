@@ -34,7 +34,7 @@ let bird = {
 
         this.boundingBox = {x: 0, y: 0, width: 0, height: 0};
 
-        return this;
+        return this.container;
     },
 
     loop() {
@@ -73,10 +73,6 @@ let bird = {
         this.bird.x = 100;
         this.velocity.x = 0;
         this.velocity.y = 0;
-    },
-
-    getElement() {
-        return this.bird;
     },
 
     getTop() {

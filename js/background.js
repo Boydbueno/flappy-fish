@@ -8,28 +8,31 @@ var background = {
     backgroundSprite: undefined,
 
     /**
-     * The width of one background tile, is needed in some calculations/checks
+     * Initialize the background
+     * @returns {PIXI.Sprite}
      */
-    skyTileWidth: 0,
-
     initialize() {
-        let skyTileTexture = utils.getTexture(settings.textures.background)
-        this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, window.innerWidth, skyTileTexture.height);
-        this.backgroundSprite.y = settings.playableAreaAboveWater - skyTileTexture.height + utils.getTexture(settings.textures.ceiling).height;
+        let skyTileTexture = utils.getTexture(settings.textures.background);
+        this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, settings.gameWidth, skyTileTexture.height);
+        this.backgroundSprite.y = this._getBackgroundSpriteYPosition(skyTileTexture.height);
 
-        return this;
+        return this.backgroundSprite;
     },
 
+    /**
+     * Update loop of the background
+     */
     loop() {
         this.backgroundSprite.tilePosition.x += -settings.backgroundSpeed;
     },
 
     /**
-     * Get the element that needs to be rendered
-     * @returns {Container}
+     * Get the y position for the background sprite
+     * @returns {Number}
+     * @private
      */
-    getElement() {
-        return this.backgroundSprite;
+    _getBackgroundSpriteYPosition(height) {
+        return settings.playableAreaAboveWater - height + utils.getTexture(settings.textures.ceiling).height;
     }
 };
 

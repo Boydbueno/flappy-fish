@@ -13,6 +13,10 @@ const settings = {
 
     playableAreaBelowWater: 260,
 
+    gameWidth: 0,
+
+    gameOverScreenPosition: { x: 0, y: 0 },
+
     /**
      * The speed at which objects move towards the player
      */
@@ -42,6 +46,8 @@ const settings = {
      * If vertical velocity of the player should be reset before applying the flap velocity
      */
     shouldBirdFlapResetVelocity: true,
+
+    ceilingSpriteHeight: 0,
 
     textures: {
         'background': 'sky.png',
@@ -73,7 +79,13 @@ const settings = {
         'SMALL_7': 'font_small_7.png',
         'SMALL_8': 'font_small_8.png',
         'SMALL_9': 'font_small_9.png',
+    },
+
+    init() {
+        this.gameWidth = window.innerWidth;
     }
 };
+
+settings.init();
 
 module.exports = settings;

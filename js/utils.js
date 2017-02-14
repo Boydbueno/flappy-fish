@@ -50,7 +50,7 @@ let utils = {
     },
 
     _getRequiredWidthTiles(tileWidth) {
-        return Math.ceil(window.innerWidth / tileWidth) + 1;
+        return Math.ceil(settings.gameWidth / tileWidth) + 1;
     }
 
 };

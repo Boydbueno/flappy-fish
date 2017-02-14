@@ -71,7 +71,7 @@ let level = {
 
         this.container.addChild(this.scoreContainer);
 
-        return this;
+        return this.container;
     },
 
     reset() {
@@ -115,14 +115,6 @@ let level = {
         return settings.playableAreaAboveWater;
     },
 
-    /**
-     * Get the element to render
-     * @returns {undefined|*}
-     */
-    getElement() {
-        return this.container;
-    },
-
     pipeCollision(bird) {
 
         // We will check if the bird is colliding with the first pipe
@@ -159,7 +151,7 @@ let level = {
     _createCeiling() {
         let ceilingTexture = utils.getTexture(settings.textures.ceiling);
 
-        this.ceilingSprite = new PIXI.extras.TilingSprite(ceilingTexture, window.innerWidth, ceilingTexture.height);
+        this.ceilingSprite = new PIXI.extras.TilingSprite(ceilingTexture, settings.gameWidth, ceilingTexture.height);
 
         return this.ceilingSprite;
     },
@@ -167,14 +159,14 @@ let level = {
     _createFloor() {
         let floorTexture = utils.getTexture(settings.textures.floor);
 
-        this.floorSprite = new PIXI.extras.TilingSprite(floorTexture, window.innerWidth, floorTexture.height);
+        this.floorSprite = new PIXI.extras.TilingSprite(floorTexture, settings.gameWidth, floorTexture.height);
         this.floorSprite.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater + utils.getTexture(settings.textures.ceiling).height;
 
         return this.floorSprite;
     },
 
     _initialPipes() {
-        let startingPipesCount = Math.ceil(window.innerWidth / this.pipeDistance);
+        let startingPipesCount = Math.ceil(settings.gameWidth / this.pipeDistance);
 
         for (let i = 0; i < startingPipesCount; i++) {
             let pipe = this._createPipe(this._getRandomPipeHeight(), this.nextPipeFacing);

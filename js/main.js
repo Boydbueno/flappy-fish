@@ -1,5 +1,6 @@
+let game = require('./game');
+
 (function() {
-    let game = require('./game');
     game.start();
 })();
 

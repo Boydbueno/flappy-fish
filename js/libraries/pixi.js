@@ -7866,8 +7866,8 @@ var Application = function () {
    */
 
 
-  Application.prototype.stop = function stop() {
-    this.ticker.stop();
+  Application.prototype._stop = function stop() {
+    this.ticker._stop();
   };
 
   /**
@@ -9483,7 +9483,7 @@ var DisplayObject = function (_EventEmitter) {
     /**
      * Retrieves the bounds of the displayObject as a rectangle object.
      *
-     * @param {boolean} skipUpdate - setting to true will stop the transforms of the scene graph from
+     * @param {boolean} skipUpdate - setting to true will _stop the transforms of the scene graph from
      *  being updated. This means the calculation returned MAY be out of date BUT will give you a
      *  nice performance boost
      * @param {PIXI.Rectangle} rect - Optional rectangle to store the result of the bounds calculation
@@ -16992,7 +16992,7 @@ var WebGLRenderer = function (_SystemRenderer) {
             return;
         }
 
-        this.currentRenderer.stop();
+        this.currentRenderer._stop();
         this.currentRenderer = objectRenderer;
         this.currentRenderer.start();
     };
@@ -17972,7 +17972,7 @@ var SpriteMaskFilter = function (_Filter) {
 
         var maskMatrix = new _math.Matrix();
 
-        var _this = _possibleConstructorReturn(this, _Filter.call(this, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 otherMatrix;\n\nvarying vec2 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = aTextureCoord;\n    vMaskCoord = ( otherMatrix * vec3( aTextureCoord, 1.0)  ).xy;\n}\n', 'varying vec2 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float alpha;\nuniform sampler2D mask;\n\nvoid main(void)\n{\n    // check clip! this will stop the mask bleeding out from the edges\n    vec2 text = abs( vMaskCoord - 0.5 );\n    text = step(0.5, text);\n\n    float clip = 1.0 - max(text.y, text.x);\n    vec4 original = texture2D(uSampler, vTextureCoord);\n    vec4 masky = texture2D(mask, vMaskCoord);\n\n    original *= (masky.r * masky.a * alpha * clip);\n\n    gl_FragColor = original;\n}\n'));
+        var _this = _possibleConstructorReturn(this, _Filter.call(this, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 otherMatrix;\n\nvarying vec2 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = aTextureCoord;\n    vMaskCoord = ( otherMatrix * vec3( aTextureCoord, 1.0)  ).xy;\n}\n', 'varying vec2 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float alpha;\nuniform sampler2D mask;\n\nvoid main(void)\n{\n    // check clip! this will _stop the mask bleeding out from the edges\n    vec2 text = abs( vMaskCoord - 0.5 );\n    text = step(0.5, text);\n\n    float clip = 1.0 - max(text.y, text.x);\n    vec4 original = texture2D(uSampler, vTextureCoord);\n    vec4 masky = texture2D(mask, vMaskCoord);\n\n    original *= (masky.r * masky.a * alpha * clip);\n\n    gl_FragColor = original;\n}\n'));
 
         sprite.renderable = false;
 
@@ -18152,14 +18152,14 @@ var FilterManager = function (_WebGLManager) {
         }
 
         // lets apply the padding After we fit the element to the screen.
-        // this should stop the strange side effects that can occur when cropping to the edges
+        // this should _stop the strange side effects that can occur when cropping to the edges
         sourceFrame.pad(padding);
 
         destinationFrame.width = sourceFrame.width;
         destinationFrame.height = sourceFrame.height;
 
         // lets play the padding after we fit the element to the screen.
-        // this should stop the strange side effects that can occur when cropping to the edges
+        // this should _stop the strange side effects that can occur when cropping to the edges
 
         var renderTarget = this.getPotRenderTarget(renderer.gl, sourceFrame.width, sourceFrame.height, resolution);
 
@@ -18714,7 +18714,7 @@ var MaskManager = function (_WebGLManager) {
 
 
     MaskManager.prototype.pushStencilMask = function pushStencilMask(maskData) {
-        this.renderer.currentRenderer.stop();
+        this.renderer.currentRenderer._stop();
         this.renderer.stencilManager.pushStencil(maskData);
     };
 
@@ -18725,7 +18725,7 @@ var MaskManager = function (_WebGLManager) {
 
 
     MaskManager.prototype.popStencilMask = function popStencilMask() {
-        this.renderer.currentRenderer.stop();
+        this.renderer.currentRenderer._stop();
         this.renderer.stencilManager.popStencil();
     };
 
@@ -19015,7 +19015,7 @@ var ObjectRenderer = function (_WebGLManager) {
    */
   ;
 
-  ObjectRenderer.prototype.stop = function stop() {
+  ObjectRenderer.prototype._stop = function stop() {
     this.flush();
   };
 
@@ -21453,7 +21453,7 @@ var SpriteRenderer = function (_ObjectRenderer) {
      */
 
 
-    SpriteRenderer.prototype.stop = function stop() {
+    SpriteRenderer.prototype._stop = function stop() {
         this.flush();
     };
 
@@ -24953,7 +24953,7 @@ var Ticker = function () {
         /**
          * Whether or not this ticker has been started.
          * `true` if {@link PIXI.ticker.Ticker#start} has been called.
-         * `false` if {@link PIXI.ticker.Ticker#stop} has been called.
+         * `false` if {@link PIXI.ticker.Ticker#_stop} has been called.
          * While `false`, this value may change to `true` in the
          * event of {@link PIXI.ticker.Ticker#autoStart} being `true`
          * and a listener is added.
@@ -25117,7 +25117,7 @@ var Ticker = function () {
      */
 
 
-    Ticker.prototype.stop = function stop() {
+    Ticker.prototype._stop = function stop() {
         if (this.started) {
             this.started = false;
             this._cancelIfNeeded();
@@ -25254,7 +25254,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * ticker.autoStart = false;
  * // FYI, call this to ensure the ticker is stopped. It should be stopped
  * // if you have not attempted to render anything yet.
- * ticker.stop();
+ * ticker._stop();
  * // Call this when you are ready for a running shared ticker.
  * ticker.start();
  *
@@ -25271,7 +25271,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @example
  * // Or you can just update it manually.
  * ticker.autoStart = false;
- * ticker.stop();
+ * ticker._stop();
  * function animate(time) {
  *     ticker.update(time);
  *     renderer.render(stage);
@@ -27300,7 +27300,7 @@ var AnimatedSprite = function (_core$Sprite) {
      */
 
 
-    AnimatedSprite.prototype.stop = function stop() {
+    AnimatedSprite.prototype._stop = function stop() {
         if (!this.playing) {
             return;
         }
@@ -27331,7 +27331,7 @@ var AnimatedSprite = function (_core$Sprite) {
     /**
      * Stops the AnimatedSprite and goes to a specific frame
      *
-     * @param {number} frameNumber - frame index to stop at
+     * @param {number} frameNumber - frame index to _stop at
      */
 
 
@@ -29001,7 +29001,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  *
  * @memberof PIXI.DisplayObject#
  * @param {Point} point - the point to write the global value to. If null a new point will be returned
- * @param {boolean} skipUpdate - setting to true will stop the transforms of the scene graph from
+ * @param {boolean} skipUpdate - setting to true will _stop the transforms of the scene graph from
  *  being updated. This means the calculation returned MAY be out of date BUT will give you a
  *  nice performance boost
  * @return {Point} The updated point

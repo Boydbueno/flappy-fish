@@ -1,6 +1,12 @@
+let settings = require('./settings');
+
 let setup = {
+    /**
+     * Set up the renderer
+     * @returns {PIXI.WebGLRenderer|PIXI.CanvasRenderer}
+     */
     renderer() {
-        let renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+        let renderer = PIXI.autoDetectRenderer(settings.gameWidth, window.innerHeight);
         renderer.view.style.position = "absolute";
         renderer.view.style.display = "block";
         renderer.backgroundColor = 0x4ec0ca;
@@ -11,7 +17,13 @@ let setup = {
         return renderer;
     },
 
+    /**
+     * Load the assets
+     * @param callback action to perform after assets have been loaded
+     */
     loadAssets(callback) {
+        if (typeof callback !== 'function') throw new Error('Callback must be a function');
+
         PIXI.loader.add("assets/assets.json").load(callback);
     }
 };
