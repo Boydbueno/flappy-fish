@@ -11,11 +11,15 @@ const settings = {
      */
     playableAreaAboveWater: 260,
 
+    /**
+     * The area that is available below the water
+     */
     playableAreaBelowWater: 260,
 
+    /**
+     * The width of the game, filled during init currently
+     */
     gameWidth: 0,
-
-    gameOverScreenPosition: { x: 0, y: 0 },
 
     /**
      * The speed at which objects move towards the player
@@ -42,11 +46,50 @@ const settings = {
      */
     birdFlapVelocity: 4.5,
 
+    /**
+     * The speed of the bird animation
+     */
     birdAnimationSpeed: 0.2,
 
+    /**
+     * Starting position of the bird
+     */
     birdStartPosition: {
         x: 100,
         y: 150,
+    },
+
+    /**
+     * The vertical gaps in the pipes for the player to fly through
+     */
+    pipeGapSize: 100,
+
+    /**
+     * The distance to the first pipe
+     */
+    firstPipeDistance: 800,
+
+    /**
+     * The distance between each pipe
+     */
+    pipeDistance: 400,
+
+    /**
+     * The min height of a pipe (handle with care)
+     */
+    minPipeHeight: 280,
+
+    /**
+     * The max height of a pipe (handle with care)
+     */
+    maxPipeHeight: 390,
+
+    /**
+     * The position of the score
+     */
+    scorePosition: {
+        x: 10,
+        y: 10 // Offset from the 'ceiling'
     },
 
     /**
@@ -54,15 +97,13 @@ const settings = {
      */
     shouldBirdFlapResetVelocity: true,
 
-    ceilingSpriteHeight: 0,
-
     textures: {
-        'background': 'sky.png',
-        'floor': 'land.png',
-        'ceiling': 'ceiling.png',
-        'pipe': 'pipe.png',
-        'pipeUp': 'pipe-up.png',
-        'pipeDown': 'pipe-down.png',
+        'BACKGROUND': 'sky.png',
+        'FLOOR': 'land.png',
+        'CEILING': 'ceiling.png',
+        'PIPE': 'pipe.png',
+        'PIPE_UP': 'pipe-up.png',
+        'PIPE_DOWN': 'pipe-down.png',
         'WATER': 'water.png',
         'GAME_OVER': 'scoreboard.png',
         'RESTART': 'replay.png',

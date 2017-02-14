@@ -179,7 +179,7 @@ let game = {
     _getWaterSprite() {
         let waterTexture = utils.getTexture(settings.textures.WATER);
         let waterSprite = new PIXI.extras.TilingSprite(waterTexture, settings.gameWidth, settings.playableAreaBelowWater);
-        waterSprite.y = utils.getTexture(settings.textures.ceiling).height + settings.playableAreaAboveWater;
+        waterSprite.y = utils.getTexture(settings.textures.CEILING).height + settings.playableAreaAboveWater;
 
         return waterSprite;
     }

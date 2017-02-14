@@ -12,7 +12,7 @@ var background = {
      * @returns {PIXI.Sprite}
      */
     initialize() {
-        let skyTileTexture = utils.getTexture(settings.textures.background);
+        let skyTileTexture = utils.getTexture(settings.textures.BACKGROUND);
         this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, settings.gameWidth, skyTileTexture.height);
         this.backgroundSprite.y = this._getBackgroundSpriteYPosition(skyTileTexture.height);
 
@@ -32,7 +32,7 @@ var background = {
      * @private
      */
     _getBackgroundSpriteYPosition(height) {
-        return settings.playableAreaAboveWater - height + utils.getTexture(settings.textures.ceiling).height;
+        return settings.playableAreaAboveWater - height + utils.getTexture(settings.textures.CEILING).height;
     }
 };
 

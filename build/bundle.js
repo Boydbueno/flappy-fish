@@ -7,7 +7,123 @@ var game = require('./game');
     game.start();
 })();
 
-},{"./game":5}],2:[function(require,module,exports){
+},{"./game":6}],2:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var settings = require('./settings');
+var utils = require('./utils');
+
+var Pipe = function () {
+    function Pipe(height, facing) {
+        _classCallCheck(this, Pipe);
+
+        this.height = height;
+        this.facing = facing;
+
+        this.pipeTexture = utils.getTexture(settings.textures.PIPE);
+        this.pipeTopTexture = utils.getTexture(settings.textures.PIPE_UP);
+        this.pipeBottomTexture = utils.getTexture(settings.textures.PIPE_DOWN);
+
+        this._container = new PIXI.Container();
+
+        var totalPlayHeight = settings.playableAreaAboveWater + settings.playableAreaBelowWater;
+
+        if (facing === Pipe.UP) {
+            this._container.addChild(this._createUpFacingPipe(height));
+        } else if (facing === Pipe.DOWN) {
+            this._container.addChild(this._createDownFacingPipe(height));
+        }
+
+        // Check if we have space for pipe in opposite direction to complete the gap
+        if (height + settings.pipeGapSize < totalPlayHeight) {
+            // We can fit another pipe opposite to it
+            var oppositePipeHeight = totalPlayHeight - height - settings.pipeGapSize;
+            if (facing === Pipe.UP) this._container.addChild(this._createDownFacingPipe(oppositePipeHeight));
+
+            if (facing === Pipe.DOWN) this._container.addChild(this._createUpFacingPipe(oppositePipeHeight));
+        }
+
+        var ceilingSpriteHeight = utils.getTexture(settings.textures.CEILING).height;
+
+        // Store the information of the gap position in the container object for easier collision checks
+        var top = (facing === Pipe.UP ? totalPlayHeight - height - settings.pipeGapSize : height) + ceilingSpriteHeight;
+        var bottom = (facing === Pipe.UP ? totalPlayHeight - height : height + settings.pipeGapSize) + ceilingSpriteHeight;
+        this.container.gap = { top: top, bottom: bottom };
+    }
+
+    _createClass(Pipe, [{
+        key: '_createUpFacingPipe',
+        value: function _createUpFacingPipe(height) {
+            var container = new PIXI.Container();
+
+            var pipeTop = new PIXI.Sprite(this.pipeTopTexture);
+            container.addChild(pipeTop);
+
+            var pipePartHeight = height - this.pipeTopTexture.height;
+
+            var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
+            pipe.y = this.pipeTopTexture.height;
+            container.addChild(pipe);
+
+            // Place pipe on the bottom
+            container.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater - height + utils.getTexture(settings.textures.CEILING).height;
+
+            return container;
+        }
+    }, {
+        key: '_createDownFacingPipe',
+        value: function _createDownFacingPipe(height) {
+            var container = new PIXI.Container();
+
+            var pipePartHeight = height - this.pipeBottomTexture.height;
+
+            var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
+            container.addChild(pipe);
+
+            var pipeBottom = new PIXI.Sprite(this.pipeBottomTexture);
+            pipeBottom.y = pipePartHeight;
+            container.addChild(pipeBottom);
+
+            // We can place it against the ceiling
+            container.y = utils.getTexture(settings.textures.CEILING).height;
+
+            return container;
+        }
+    }, {
+        key: 'container',
+        get: function get() {
+            return this._container;
+        },
+        set: function set(container) {
+            this._container = container;
+        }
+    }], [{
+        key: 'textureWidth',
+        get: function get() {
+            return utils.getTexture(settings.textures.PIPE).width;
+        }
+    }, {
+        key: 'UP',
+        get: function get() {
+            return 1;
+        }
+    }, {
+        key: 'DOWN',
+        get: function get() {
+            return -1;
+        }
+    }]);
+
+    return Pipe;
+}();
+
+module.exports = Pipe;
+
+},{"./settings":9,"./utils":11}],3:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -47,7 +163,7 @@ audioPlayer.init();
 
 module.exports = audioPlayer;
 
-},{"./settings":8}],3:[function(require,module,exports){
+},{"./settings":9}],4:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings.js');
@@ -64,7 +180,7 @@ var background = {
      * @returns {PIXI.Sprite}
      */
     initialize: function initialize() {
-        var skyTileTexture = utils.getTexture(settings.textures.background);
+        var skyTileTexture = utils.getTexture(settings.textures.BACKGROUND);
         this.backgroundSprite = new PIXI.extras.TilingSprite(skyTileTexture, settings.gameWidth, skyTileTexture.height);
         this.backgroundSprite.y = this._getBackgroundSpriteYPosition(skyTileTexture.height);
 
@@ -86,13 +202,13 @@ var background = {
      * @private
      */
     _getBackgroundSpriteYPosition: function _getBackgroundSpriteYPosition(height) {
-        return settings.playableAreaAboveWater - height + utils.getTexture(settings.textures.ceiling).height;
+        return settings.playableAreaAboveWater - height + utils.getTexture(settings.textures.CEILING).height;
     }
 };
 
 module.exports = background;
 
-},{"./settings.js":8,"./utils.js":10}],4:[function(require,module,exports){
+},{"./settings.js":9,"./utils.js":11}],5:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -272,7 +388,7 @@ var bird = {
 
 module.exports = bird;
 
-},{"./audioPlayer":2,"./settings":8,"./utils":10}],5:[function(require,module,exports){
+},{"./audioPlayer":3,"./settings":9,"./utils":11}],6:[function(require,module,exports){
 'use strict';
 
 var setup = require('./setup');
@@ -466,7 +582,7 @@ var game = {
     _getWaterSprite: function _getWaterSprite() {
         var waterTexture = utils.getTexture(settings.textures.WATER);
         var waterSprite = new PIXI.extras.TilingSprite(waterTexture, settings.gameWidth, settings.playableAreaBelowWater);
-        waterSprite.y = utils.getTexture(settings.textures.ceiling).height + settings.playableAreaAboveWater;
+        waterSprite.y = utils.getTexture(settings.textures.CEILING).height + settings.playableAreaAboveWater;
 
         return waterSprite;
     }
@@ -474,7 +590,7 @@ var game = {
 
 module.exports = game;
 
-},{"./audioPlayer":2,"./background":3,"./bird":4,"./gameOverScreen":6,"./level":7,"./settings":8,"./setup":9,"./utils":10}],6:[function(require,module,exports){
+},{"./audioPlayer":3,"./background":4,"./bird":5,"./gameOverScreen":7,"./level":8,"./settings":9,"./setup":10,"./utils":11}],7:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -615,7 +731,7 @@ var gameOverScreen = {
      * @private
      */
     _getContainerYPosition: function _getContainerYPosition() {
-        var ceilingHeight = utils.getTexture(settings.textures.ceiling).height;
+        var ceilingHeight = utils.getTexture(settings.textures.CEILING).height;
         var gameOverScreenHeight = utils.getTexture(settings.textures.GAME_OVER).height;
         return (ceilingHeight + settings.playableAreaAboveWater + settings.playableAreaBelowWater) / 2 - gameOverScreenHeight / 2;
     }
@@ -623,7 +739,7 @@ var gameOverScreen = {
 
 module.exports = gameOverScreen;
 
-},{"./settings":8,"./utils":10}],7:[function(require,module,exports){
+},{"./settings":9,"./utils":11}],8:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -631,41 +747,35 @@ var utils = require('./utils.js');
 
 var audioPlayer = require('./audioPlayer');
 
-var pipeFacing = {
-    'UP': 1,
-    'DOWN': -1
-};
+var Pipe = require('./Pipe');
 
 var level = {
     /**
      * The container that will contain everything that needs to be moved towards the player
      */
     container: undefined,
+
     /**
-     * The container that will contain all floor tiles
+     * Tiled floor sprite
      */
     floorSprite: undefined,
 
+    /**
+     * Tiled ceiling sprite
+     */
     ceilingSprite: undefined,
 
+    /**
+     * Container that will contain all pipes
+     */
     pipesContainer: undefined,
-    pipes: [],
 
-    pipeTexture: undefined,
-    pipeTopTexture: undefined,
-    pipeBottomTexture: undefined,
-
-    firstPipeFacing: pipeFacing.UP,
+    firstPipeFacing: Pipe.UP,
 
     nextPipeFacing: 0,
     placedPipesCount: 0,
 
     playerInsidePipe: false,
-
-    pipeGapSize: 100,
-
-    pipeDistance: 400,
-    firstPipeDistance: 800,
 
     score: 0,
     bestScore: 0,
@@ -677,42 +787,11 @@ var level = {
         this.container.addChild(this._createCeiling());
         this.container.addChild(this._createFloor());
 
-        // Pipes stuff
-        this.nextPipeFacing = this.firstPipeFacing;
-        this.pipeTexture = utils.getTexture(settings.textures.pipe);
-        this.pipeTopTexture = utils.getTexture(settings.textures.pipeUp);
-        this.pipeBottomTexture = utils.getTexture(settings.textures.pipeDown);
+        this.container.addChild(this._createInitialPipes());
 
-        this.pipesContainer = new PIXI.Container();
-
-        this._initialPipes();
-
-        this.container.addChild(this.pipesContainer);
-
-        // Score
-        this.scoreContainer = new PIXI.Container();
-        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
-
-        // Todo: Make vars
-        this.scoreContainer.x = 10;
-        this.scoreContainer.y = utils.getTexture(settings.textures.ceiling).height + 10;
-
-        this.container.addChild(this.scoreContainer);
+        this.container.addChild(this._createScoreContainer());
 
         return this.container;
-    },
-    reset: function reset() {
-        this.score = 0;
-        this.scoreContainer.removeChild(this.scoreContainer.children[0]);
-        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
-
-        this.pipesContainer.x = 0;
-        this.pipesContainer.children.splice(0);
-        this.pipes = [];
-        this.playerInsidePipe = false;
-        this.nextPipeFacing = this.firstPipeFacing;
-        this.placedPipesCount = 0;
-        this._initialPipes();
     },
     loop: function loop() {
         this.ceilingSprite.tilePosition.x += -settings.forwardSpeed;
@@ -722,15 +801,30 @@ var level = {
         this.pipesContainer.x += -settings.forwardSpeed;
 
         // Remove pipes when they're off screen
-        if (this.pipes.length > 0) {
+        if (this.pipesContainer.children.length > 0) {
 
-            if (this.pipesContainer.x < -this.pipes[0].x - this.pipeTexture.width) {
-                this.pipesContainer.removeChild(this.pipes[0]);
-                this.pipes.shift();
-
-                this._placeNewPipe();
+            if (this.pipesContainer.x < -this.pipesContainer.children[0].x - Pipe.textureWidth) {
+                this.pipesContainer.removeChild(this.pipesContainer.children[0]);
+                this._placeNewPipe(this.placedPipesCount);
             }
         }
+    },
+
+
+    /**
+     * Reset the state of the level
+     */
+    reset: function reset() {
+        this.score = 0;
+        this.scoreContainer.removeChild(this.scoreContainer.children[0]);
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+
+        this.pipesContainer.x = 0;
+        this.pipesContainer.children.splice(0);
+        this.playerInsidePipe = false;
+        this.nextPipeFacing = this.firstPipeFacing;
+        this.placedPipesCount = 0;
+        this.container.addChild(this._createInitialPipes());
     },
 
 
@@ -741,27 +835,19 @@ var level = {
         return settings.playableAreaAboveWater;
     },
     pipeCollision: function pipeCollision(bird) {
-
-        // We will check if the bird is colliding with the first pipe
-        // The bird can't possibly hit any other pipes
-
-        // We only need to collide with the left side of the pipes and the top/bottom pieces
-        // We know how far the pipe container has moved to the right, we can use this to get the left side
-
         // Because of square collision it can feel unfair when hitting the sides of the pipes while at an angle
         // Which often happens when diving through the gap. To make things a bit fairer, added a small margin;
         var collisionMargin = 2;
 
-        var left = this.pipesContainer.x + this.pipes[0].x + collisionMargin;
-        var right = left + utils.getTexture(settings.textures.pipe).width - collisionMargin;
+        var left = this.pipesContainer.x + this.pipesContainer.children[0].x + collisionMargin;
+        var right = left + utils.getTexture(settings.textures.PIPE).width - collisionMargin;
 
         // The bird is in the left/right boundaries of the first pipe
         if (bird.getRight() > left && bird.getLeft() < right) {
-
             this.playerInsidePipe = true;
 
             // The bird is above the gap!
-            if (bird.getTop() < this.pipes[0].gap.top || bird.getBottom() > this.pipes[0].gap.bottom) {
+            if (bird.getTop() < this.pipesContainer.children[0].gap.top || bird.getBottom() > this.pipesContainer.children[0].gap.bottom) {
                 return true;
             }
         } else if (this.playerInsidePipe) {
@@ -772,104 +858,86 @@ var level = {
 
         return false;
     },
+
+
+    /**
+     * Create the tiled ceiling sprite
+     * @returns {PIXI.extras.TilingSprite}
+     * @private
+     */
     _createCeiling: function _createCeiling() {
-        var ceilingTexture = utils.getTexture(settings.textures.ceiling);
+        var ceilingTexture = utils.getTexture(settings.textures.CEILING);
 
         this.ceilingSprite = new PIXI.extras.TilingSprite(ceilingTexture, settings.gameWidth, ceilingTexture.height);
 
         return this.ceilingSprite;
     },
+
+
+    /**
+     * Create the tiled floor sprite
+     * @returns {PIXI.extras.TilingSprite}
+     * @private
+     */
     _createFloor: function _createFloor() {
-        var floorTexture = utils.getTexture(settings.textures.floor);
+        var floorTexture = utils.getTexture(settings.textures.FLOOR);
 
         this.floorSprite = new PIXI.extras.TilingSprite(floorTexture, settings.gameWidth, floorTexture.height);
-        this.floorSprite.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater + utils.getTexture(settings.textures.ceiling).height;
+        this.floorSprite.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater + utils.getTexture(settings.textures.CEILING).height;
 
         return this.floorSprite;
     },
-    _initialPipes: function _initialPipes() {
-        var startingPipesCount = Math.ceil(settings.gameWidth / this.pipeDistance);
+
+
+    /**
+     * @returns {PIXI.Container}
+     * @private
+     */
+    _createInitialPipes: function _createInitialPipes() {
+        this.nextPipeFacing = this.firstPipeFacing;
+        this.pipesContainer = new PIXI.Container();
+
+        var startingPipesCount = Math.ceil(settings.gameWidth / settings.pipeDistance);
 
         for (var i = 0; i < startingPipesCount; i++) {
-            var pipe = this._createPipe(this._getRandomPipeHeight(), this.nextPipeFacing);
-            pipe.x = this.firstPipeDistance + this.pipeDistance * i;
-            this.pipesContainer.addChild(pipe);
-            this.pipes.push(pipe);
-
-            this.nextPipeFacing *= -1;
-            this.placedPipesCount++;
+            this._placeNewPipe(i);
         }
+
+        return this.pipesContainer;
     },
-    _placeNewPipe: function _placeNewPipe() {
+
+
+    /**
+     * @returns {PIXI.Container}
+     * @private
+     */
+    _createScoreContainer: function _createScoreContainer() {
+        this.scoreContainer = new PIXI.Container();
+        this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
+
+        this.scoreContainer.x = settings.scorePosition.x;
+        this.scoreContainer.y = utils.getTexture(settings.textures.CEILING).height + settings.scorePosition.y;
+
+        return this.scoreContainer;
+    },
+
+
+    /**
+     * Create a new pipe, the position depends on the number
+     * @param number
+     * @private
+     */
+    _placeNewPipe: function _placeNewPipe(number) {
         // We need total pipe amount, to calculate position of new one
         var pipe = this._createPipe(this._getRandomPipeHeight(), this.nextPipeFacing);
-        pipe.x = this.placedPipesCount * this.pipeDistance + this.firstPipeDistance;
-        this.pipesContainer.addChild(pipe);
-        this.pipes.push(pipe);
+        pipe.container.x = settings.firstPipeDistance + settings.pipeDistance * number;
+        this.pipesContainer.addChild(pipe.container);
 
         this.nextPipeFacing *= -1;
         this.placedPipesCount++;
     },
     _createPipe: function _createPipe(height, direction) {
-        var container = new PIXI.Container();
-
-        var totalPlayHeight = settings.playableAreaAboveWater + settings.playableAreaBelowWater;
-
-        if (direction === pipeFacing.UP) {
-            container.addChild(this._createUpFacingPipe(height));
-        } else if (direction === pipeFacing.DOWN) {
-            container.addChild(this._createDownFacingPipe(height));
-        }
-
-        // Check if we have space for pipe in opposite direction to complete the gap
-        if (height + this.pipeGapSize < totalPlayHeight) {
-            // We can fit another pipe opposite to it
-            var oppositePipeHeight = totalPlayHeight - height - this.pipeGapSize;
-            if (direction === pipeFacing.UP) container.addChild(this._createDownFacingPipe(oppositePipeHeight));
-
-            if (direction === pipeFacing.DOWN) container.addChild(this._createUpFacingPipe(oppositePipeHeight));
-        }
-
-        // Store the information of the gap position in the container object for easier collision checks
-        var top = (direction === pipeFacing.UP ? totalPlayHeight - height - this.pipeGapSize : height) + this.ceilingSprite.height;
-        var bottom = (direction === pipeFacing.UP ? totalPlayHeight - height : height + this.pipeGapSize) + this.ceilingSprite.height;
-        container.gap = { top: top, bottom: bottom };
-
-        return container;
-    },
-    _createUpFacingPipe: function _createUpFacingPipe(height) {
-        var container = new PIXI.Container();
-
-        var pipeTop = new PIXI.Sprite(this.pipeTopTexture);
-        container.addChild(pipeTop);
-
-        var pipePartHeight = height - this.pipeTopTexture.height;
-
-        var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
-        pipe.y = this.pipeTopTexture.height;
-        container.addChild(pipe);
-
-        // Place pipe on the bottom
-        container.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater - height + utils.getTexture(settings.textures.ceiling).height;
-
-        return container;
-    },
-    _createDownFacingPipe: function _createDownFacingPipe(height) {
-        var container = new PIXI.Container();
-
-        var pipePartHeight = height - this.pipeBottomTexture.height;
-
-        var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
-        container.addChild(pipe);
-
-        var pipeBottom = new PIXI.Sprite(this.pipeBottomTexture);
-        pipeBottom.y = pipePartHeight;
-        container.addChild(pipeBottom);
-
-        // We can place it against the ceiling
-        container.y = utils.getTexture(settings.textures.ceiling).height;
-
-        return container;
+        return new Pipe(height, direction);
     },
     _increaseScore: function _increaseScore() {
         audioPlayer.play(audioPlayer.audioFragments.POINT);
@@ -882,18 +950,21 @@ var level = {
 
         this.scoreContainer.addChild(utils.scoreToSprites(this.score, utils.scoreSize.BIG));
     },
-    _getRandomPipeHeight: function _getRandomPipeHeight() {
-        // Todo: Grab from settings somewhere
-        var minHeight = 280;
-        var maxHeight = 390;
 
-        return Math.random() * (maxHeight - minHeight) + minHeight;
+
+    /**
+     * Get a random height for the pipe
+     * @returns {number}
+     * @private
+     */
+    _getRandomPipeHeight: function _getRandomPipeHeight() {
+        return Math.random() * (settings.maxPipeHeight - settings.minPipeHeight) + settings.minPipeHeight;
     }
 };
 
 module.exports = level;
 
-},{"./audioPlayer":2,"./settings":8,"./utils.js":10}],8:[function(require,module,exports){
+},{"./Pipe":2,"./audioPlayer":3,"./settings":9,"./utils.js":11}],9:[function(require,module,exports){
 "use strict";
 
 var settings = {
@@ -909,11 +980,15 @@ var settings = {
      */
     playableAreaAboveWater: 260,
 
+    /**
+     * The area that is available below the water
+     */
     playableAreaBelowWater: 260,
 
+    /**
+     * The width of the game, filled during init currently
+     */
     gameWidth: 0,
-
-    gameOverScreenPosition: { x: 0, y: 0 },
 
     /**
      * The speed at which objects move towards the player
@@ -940,11 +1015,50 @@ var settings = {
      */
     birdFlapVelocity: 4.5,
 
+    /**
+     * The speed of the bird animation
+     */
     birdAnimationSpeed: 0.2,
 
+    /**
+     * Starting position of the bird
+     */
     birdStartPosition: {
         x: 100,
         y: 150
+    },
+
+    /**
+     * The vertical gaps in the pipes for the player to fly through
+     */
+    pipeGapSize: 100,
+
+    /**
+     * The distance to the first pipe
+     */
+    firstPipeDistance: 800,
+
+    /**
+     * The distance between each pipe
+     */
+    pipeDistance: 400,
+
+    /**
+     * The min height of a pipe (handle with care)
+     */
+    minPipeHeight: 280,
+
+    /**
+     * The max height of a pipe (handle with care)
+     */
+    maxPipeHeight: 390,
+
+    /**
+     * The position of the score
+     */
+    scorePosition: {
+        x: 10,
+        y: 10 // Offset from the 'ceiling'
     },
 
     /**
@@ -952,15 +1066,13 @@ var settings = {
      */
     shouldBirdFlapResetVelocity: true,
 
-    ceilingSpriteHeight: 0,
-
     textures: {
-        'background': 'sky.png',
-        'floor': 'land.png',
-        'ceiling': 'ceiling.png',
-        'pipe': 'pipe.png',
-        'pipeUp': 'pipe-up.png',
-        'pipeDown': 'pipe-down.png',
+        'BACKGROUND': 'sky.png',
+        'FLOOR': 'land.png',
+        'CEILING': 'ceiling.png',
+        'PIPE': 'pipe.png',
+        'PIPE_UP': 'pipe-up.png',
+        'PIPE_DOWN': 'pipe-down.png',
         'WATER': 'water.png',
         'GAME_OVER': 'scoreboard.png',
         'RESTART': 'replay.png',
@@ -995,7 +1107,7 @@ settings.init();
 
 module.exports = settings;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 var settings = require('./settings');
@@ -1031,7 +1143,7 @@ var setup = {
 
 module.exports = setup;
 
-},{"./settings":8}],10:[function(require,module,exports){
+},{"./settings":9}],11:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -1054,19 +1166,11 @@ var utils = {
 
 
     /**
-     * Fill a given pixi container and fill it with vertically aligned tiles fitting whole window width
-     * @param container
-     * @param texture
+     * Generate score sprites based on passed score
+     * @param score
+     * @param size
+     * @returns {Container|*}
      */
-    fillContainerWithWindowWidthTiles: function fillContainerWithWindowWidthTiles(container, texture) {
-        var requiredTiles = this._getRequiredWidthTiles(texture.width);
-
-        for (var i = 0; i < requiredTiles; i++) {
-            var tile = new PIXI.Sprite(texture);
-            tile.x = tile.width * i;
-            container.addChild(tile);
-        }
-    },
     scoreToSprites: function scoreToSprites(score, size) {
         var stringScore = score.toString();
 
@@ -1082,14 +1186,11 @@ var utils = {
         }
 
         return digitsContainer;
-    },
-    _getRequiredWidthTiles: function _getRequiredWidthTiles(tileWidth) {
-        return Math.ceil(settings.gameWidth / tileWidth) + 1;
     }
 };
 
 module.exports = utils;
 
-},{"./settings":8}]},{},[1])
+},{"./settings":9}]},{},[1])
 
 //# sourceMappingURL=bundle.js.map

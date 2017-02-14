@@ -129,7 +129,7 @@ let gameOverScreen = {
      * @private
      */
     _getContainerYPosition() {
-        let ceilingHeight = utils.getTexture(settings.textures.ceiling).height;
+        let ceilingHeight = utils.getTexture(settings.textures.CEILING).height;
         let gameOverScreenHeight = utils.getTexture(settings.textures.GAME_OVER).height;
         return (ceilingHeight + settings.playableAreaAboveWater + settings.playableAreaBelowWater) / 2 - gameOverScreenHeight / 2;
     }

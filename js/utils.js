@@ -17,26 +17,16 @@ let utils = {
     },
 
     /**
-     * Fill a given pixi container and fill it with vertically aligned tiles fitting whole window width
-     * @param container
-     * @param texture
+     * Generate score sprites based on passed score
+     * @param score
+     * @param size
+     * @returns {Container|*}
      */
-    fillContainerWithWindowWidthTiles(container, texture) {
-        let requiredTiles = this._getRequiredWidthTiles(texture.width);
-
-        for (let i = 0; i < requiredTiles; i++) {
-            let tile = new PIXI.Sprite(texture);
-            tile.x = tile.width * i;
-            container.addChild(tile);
-        }
-    },
-
     scoreToSprites(score, size) {
         let stringScore = score.toString();
 
         let texturePrefix = size === this.scoreSize.BIG ? 'BIG_' : 'SMALL_';
         let letterSpacing = size === this.scoreSize.BIG ? 25 : 10;
-
 
         let digitsContainer = new PIXI.Container();
 
@@ -47,12 +37,7 @@ let utils = {
         }
 
         return digitsContainer;
-    },
-
-    _getRequiredWidthTiles(tileWidth) {
-        return Math.ceil(settings.gameWidth / tileWidth) + 1;
     }
-
 };
 
 module.exports = utils;
