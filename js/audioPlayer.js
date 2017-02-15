@@ -2,6 +2,11 @@ let settings = require('./settings');
 
 let audioPlayer = {
 
+    /**
+     * Use this volume for all audio
+     */
+    volume: 0.5,
+
     audioFragments: {
         'FLAP': 'sfx_wing.ogg',
         'HIT': 'sfx_hit.ogg',
@@ -17,7 +22,9 @@ let audioPlayer = {
     init() {
         // Todo: Maybe we need to wait with starting the game until these have been loaded
         for (let key in this.audioFragments) {
-            this._audio[this.audioFragments[key]] = new Audio(settings.soundsPath + this.audioFragments[key]);
+            let audio = new Audio(settings.soundsPath + this.audioFragments[key]);
+            audio.volume = this.volume;
+            this._audio[this.audioFragments[key]] = audio;
         }
     },
 

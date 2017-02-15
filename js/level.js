@@ -94,7 +94,7 @@ let level = {
     pipeCollision(bird) {
         // Because of square collision it can feel unfair when hitting the sides of the pipes while at an angle
         // Which often happens when diving through the gap. To make things a bit fairer, added a small margin;
-        let collisionMargin = 2;
+        let collisionMargin = settings.pipeCollisionSidesMargin;
 
         let left = this.pipesContainer.x + this.pipesContainer.children[0].x + collisionMargin;
         let right = left + utils.getTexture(settings.textures.PIPE).width - collisionMargin;
@@ -104,7 +104,7 @@ let level = {
             this.playerInsidePipe = true;
 
             // The bird is above the gap!
-            if (bird.getTop() < this.pipesContainer.children[0].gap.top || bird.getBottom() > this.pipesContainer.children[0].gap.bottom) {
+            if (bird.getTop() < this.pipesContainer.children[0].gap.top - settings.pipeCollisionGapMargin || bird.getBottom() > this.pipesContainer.children[0].gap.bottom + settings.pipeCollisionGapMargin) {
                 return true;
             }
         } else if (this.playerInsidePipe) {

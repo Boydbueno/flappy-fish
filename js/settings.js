@@ -84,6 +84,10 @@ const settings = {
      */
     maxPipeHeight: 390,
 
+    pipeCollisionSidesMargin: 6,
+
+    pipeCollisionGapMargin: 3,
+
     /**
      * The position of the score
      */

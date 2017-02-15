@@ -130,6 +130,11 @@ var settings = require('./settings');
 
 var audioPlayer = {
 
+    /**
+     * Use this volume for all audio
+     */
+    volume: 0.5,
+
     audioFragments: {
         'FLAP': 'sfx_wing.ogg',
         'HIT': 'sfx_hit.ogg',
@@ -145,7 +150,9 @@ var audioPlayer = {
     init: function init() {
         // Todo: Maybe we need to wait with starting the game until these have been loaded
         for (var key in this.audioFragments) {
-            this._audio[this.audioFragments[key]] = new Audio(settings.soundsPath + this.audioFragments[key]);
+            var audio = new Audio(settings.soundsPath + this.audioFragments[key]);
+            audio.volume = this.volume;
+            this._audio[this.audioFragments[key]] = audio;
         }
     },
     play: function play(audioFragment, callback) {
@@ -552,7 +559,6 @@ var game = {
         var _this = this;
 
         window.addEventListener("keydown", function (e) {
-
             if (e.keyCode != 32) return; // Not spacebar
             if (_this.hasStopped) {
                 _this._clickRestart();
@@ -838,7 +844,7 @@ var level = {
     pipeCollision: function pipeCollision(bird) {
         // Because of square collision it can feel unfair when hitting the sides of the pipes while at an angle
         // Which often happens when diving through the gap. To make things a bit fairer, added a small margin;
-        var collisionMargin = 2;
+        var collisionMargin = settings.pipeCollisionSidesMargin;
 
         var left = this.pipesContainer.x + this.pipesContainer.children[0].x + collisionMargin;
         var right = left + utils.getTexture(settings.textures.PIPE).width - collisionMargin;
@@ -848,7 +854,7 @@ var level = {
             this.playerInsidePipe = true;
 
             // The bird is above the gap!
-            if (bird.getTop() < this.pipesContainer.children[0].gap.top || bird.getBottom() > this.pipesContainer.children[0].gap.bottom) {
+            if (bird.getTop() < this.pipesContainer.children[0].gap.top - settings.pipeCollisionGapMargin || bird.getBottom() > this.pipesContainer.children[0].gap.bottom + settings.pipeCollisionGapMargin) {
                 return true;
             }
         } else if (this.playerInsidePipe) {
@@ -1053,6 +1059,10 @@ var settings = {
      * The max height of a pipe (handle with care)
      */
     maxPipeHeight: 390,
+
+    pipeCollisionSidesMargin: 6,
+
+    pipeCollisionGapMargin: 3,
 
     /**
      * The position of the score
