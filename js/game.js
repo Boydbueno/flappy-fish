@@ -149,7 +149,7 @@ let game = {
      * @private
      */
     _setEvents() {
-        window.addEventListener("keyup", (e) => {
+        window.addEventListener("keydown", (e) => {
             if (e.keyCode != 32) return; // Not spacebar
             if (this.hasStopped) {
                 this._clickRestart();

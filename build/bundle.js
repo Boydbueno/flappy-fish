@@ -551,7 +551,8 @@ var game = {
     _setEvents: function _setEvents() {
         var _this = this;
 
-        window.addEventListener("keyup", function (e) {
+        window.addEventListener("keydown", function (e) {
+
             if (e.keyCode != 32) return; // Not spacebar
             if (_this.hasStopped) {
                 _this._clickRestart();
