@@ -1105,7 +1105,7 @@ var setup = {
      * @returns {PIXI.WebGLRenderer|PIXI.CanvasRenderer}
      */
     renderer: function renderer() {
-        var renderer = PIXI.autoDetectRenderer(settings.gameWidth, window.innerHeight);
+        var renderer = PIXI.autoDetectRenderer(settings.gameWidth, this.playableAreaAboveWater + this.playableAreaBelowWater);
         renderer.view.style.position = "absolute";
         renderer.view.style.display = "block";
         renderer.backgroundColor = 0x4ec0ca;
