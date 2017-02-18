@@ -1,43 +1,49 @@
 let settings = require('./settings');
 let utils = require('./utils');
 
-class Pipe {
-    constructor(height, facing) {
-        this.height = height;
-        this.facing = facing;
+let pipeFactory = {
+    textureWidth: 0,
 
+    facing: {
+        'UP': 1,
+        'DOWN': -1
+    },
+
+    create(height, facing) {
         this.pipeTexture = utils.getTexture(settings.textures.PIPE);
         this.pipeTopTexture = utils.getTexture(settings.textures.PIPE_UP);
         this.pipeBottomTexture = utils.getTexture(settings.textures.PIPE_DOWN);
 
-        this._container = new PIXI.Container();
+        let container = new PIXI.Container();
 
         let totalPlayHeight = settings.playableAreaAboveWater + settings.playableAreaBelowWater;
 
-        if (facing === Pipe.UP) {
-            this._container.addChild(this._createUpFacingPipe(height));
-        } else if (facing === Pipe.DOWN) {
-            this._container.addChild(this._createDownFacingPipe(height));
+        if (facing === this.facing.UP) {
+            container.addChild(this._createUpFacingPipe(height));
+        } else if (facing === this.facing.DOWN) {
+            container.addChild(this._createDownFacingPipe(height));
         }
 
         // Check if we have space for pipe in opposite direction to complete the gap
         if (height + settings.pipeGapSize < totalPlayHeight) {
             // We can fit another pipe opposite to it
             let oppositePipeHeight = totalPlayHeight - height - settings.pipeGapSize;
-            if (facing === Pipe.UP)
-                this._container.addChild(this._createDownFacingPipe(oppositePipeHeight));
+            if (facing === this.facing.UP)
+                container.addChild(this._createDownFacingPipe(oppositePipeHeight));
 
-            if (facing === Pipe.DOWN)
-                this._container.addChild(this._createUpFacingPipe(oppositePipeHeight));
+            if (facing === this.facing.DOWN)
+                container.addChild(this._createUpFacingPipe(oppositePipeHeight));
         }
 
         let ceilingSpriteHeight = utils.getTexture(settings.textures.CEILING).height;
 
         // Store the information of the gap position in the container object for easier collision checks
-        let top = (facing === Pipe.UP ? totalPlayHeight - height - settings.pipeGapSize : height) + ceilingSpriteHeight;
-        let bottom = (facing === Pipe.UP ? totalPlayHeight - height : height + settings.pipeGapSize) + ceilingSpriteHeight;
-        this.container.gap = { top, bottom }
-    }
+        let top = (facing === this.facing.UP ? totalPlayHeight - height - settings.pipeGapSize : height) + ceilingSpriteHeight;
+        let bottom = (facing === this.facing.UP ? totalPlayHeight - height : height + settings.pipeGapSize) + ceilingSpriteHeight;
+        container.gap = { top, bottom }
+
+        return container;
+    },
 
     _createUpFacingPipe(height) {
         let container = new PIXI.Container();
@@ -55,7 +61,7 @@ class Pipe {
         container.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater - height + utils.getTexture(settings.textures.CEILING).height;
 
         return container;
-    }
+    },
 
     _createDownFacingPipe(height) {
         let container = new PIXI.Container();
@@ -74,26 +80,6 @@ class Pipe {
 
         return container;
     }
-
-    get container() {
-        return this._container;
-    }
-
-    set container(container) {
-        this._container = container;
-    }
-
-    static get textureWidth() {
-        return utils.getTexture(settings.textures.PIPE).width;
-    }
-
-    static get UP() {
-        return 1;
-    }
-
-    static get DOWN() {
-        return -1;
-    }
 }
 
-module.exports = Pipe;
+module.exports = pipeFactory;

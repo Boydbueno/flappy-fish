@@ -7,123 +7,7 @@ var game = require('./game');
     game.start();
 })();
 
-},{"./game":6}],2:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var settings = require('./settings');
-var utils = require('./utils');
-
-var Pipe = function () {
-    function Pipe(height, facing) {
-        _classCallCheck(this, Pipe);
-
-        this.height = height;
-        this.facing = facing;
-
-        this.pipeTexture = utils.getTexture(settings.textures.PIPE);
-        this.pipeTopTexture = utils.getTexture(settings.textures.PIPE_UP);
-        this.pipeBottomTexture = utils.getTexture(settings.textures.PIPE_DOWN);
-
-        this._container = new PIXI.Container();
-
-        var totalPlayHeight = settings.playableAreaAboveWater + settings.playableAreaBelowWater;
-
-        if (facing === Pipe.UP) {
-            this._container.addChild(this._createUpFacingPipe(height));
-        } else if (facing === Pipe.DOWN) {
-            this._container.addChild(this._createDownFacingPipe(height));
-        }
-
-        // Check if we have space for pipe in opposite direction to complete the gap
-        if (height + settings.pipeGapSize < totalPlayHeight) {
-            // We can fit another pipe opposite to it
-            var oppositePipeHeight = totalPlayHeight - height - settings.pipeGapSize;
-            if (facing === Pipe.UP) this._container.addChild(this._createDownFacingPipe(oppositePipeHeight));
-
-            if (facing === Pipe.DOWN) this._container.addChild(this._createUpFacingPipe(oppositePipeHeight));
-        }
-
-        var ceilingSpriteHeight = utils.getTexture(settings.textures.CEILING).height;
-
-        // Store the information of the gap position in the container object for easier collision checks
-        var top = (facing === Pipe.UP ? totalPlayHeight - height - settings.pipeGapSize : height) + ceilingSpriteHeight;
-        var bottom = (facing === Pipe.UP ? totalPlayHeight - height : height + settings.pipeGapSize) + ceilingSpriteHeight;
-        this.container.gap = { top: top, bottom: bottom };
-    }
-
-    _createClass(Pipe, [{
-        key: '_createUpFacingPipe',
-        value: function _createUpFacingPipe(height) {
-            var container = new PIXI.Container();
-
-            var pipeTop = new PIXI.Sprite(this.pipeTopTexture);
-            container.addChild(pipeTop);
-
-            var pipePartHeight = height - this.pipeTopTexture.height;
-
-            var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
-            pipe.y = this.pipeTopTexture.height;
-            container.addChild(pipe);
-
-            // Place pipe on the bottom
-            container.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater - height + utils.getTexture(settings.textures.CEILING).height;
-
-            return container;
-        }
-    }, {
-        key: '_createDownFacingPipe',
-        value: function _createDownFacingPipe(height) {
-            var container = new PIXI.Container();
-
-            var pipePartHeight = height - this.pipeBottomTexture.height;
-
-            var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
-            container.addChild(pipe);
-
-            var pipeBottom = new PIXI.Sprite(this.pipeBottomTexture);
-            pipeBottom.y = pipePartHeight;
-            container.addChild(pipeBottom);
-
-            // We can place it against the ceiling
-            container.y = utils.getTexture(settings.textures.CEILING).height;
-
-            return container;
-        }
-    }, {
-        key: 'container',
-        get: function get() {
-            return this._container;
-        },
-        set: function set(container) {
-            this._container = container;
-        }
-    }], [{
-        key: 'textureWidth',
-        get: function get() {
-            return utils.getTexture(settings.textures.PIPE).width;
-        }
-    }, {
-        key: 'UP',
-        get: function get() {
-            return 1;
-        }
-    }, {
-        key: 'DOWN',
-        get: function get() {
-            return -1;
-        }
-    }]);
-
-    return Pipe;
-}();
-
-module.exports = Pipe;
-
-},{"./settings":9,"./utils":11}],3:[function(require,module,exports){
+},{"./game":5}],2:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -170,7 +54,7 @@ audioPlayer.init();
 
 module.exports = audioPlayer;
 
-},{"./settings":9}],4:[function(require,module,exports){
+},{"./settings":9}],3:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings.js');
@@ -215,7 +99,7 @@ var background = {
 
 module.exports = background;
 
-},{"./settings.js":9,"./utils.js":11}],5:[function(require,module,exports){
+},{"./settings.js":9,"./utils.js":11}],4:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -401,7 +285,7 @@ var bird = {
 
 module.exports = bird;
 
-},{"./audioPlayer":3,"./settings":9,"./utils":11}],6:[function(require,module,exports){
+},{"./audioPlayer":2,"./settings":9,"./utils":11}],5:[function(require,module,exports){
 'use strict';
 
 var setup = require('./setup');
@@ -603,7 +487,7 @@ var game = {
 
 module.exports = game;
 
-},{"./audioPlayer":3,"./background":4,"./bird":5,"./gameOverScreen":7,"./level":8,"./settings":9,"./setup":10,"./utils":11}],7:[function(require,module,exports){
+},{"./audioPlayer":2,"./background":3,"./bird":4,"./gameOverScreen":6,"./level":7,"./settings":9,"./setup":10,"./utils":11}],6:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -752,7 +636,7 @@ var gameOverScreen = {
 
 module.exports = gameOverScreen;
 
-},{"./settings":9,"./utils":11}],8:[function(require,module,exports){
+},{"./settings":9,"./utils":11}],7:[function(require,module,exports){
 'use strict';
 
 var settings = require('./settings');
@@ -760,7 +644,7 @@ var utils = require('./utils.js');
 
 var audioPlayer = require('./audioPlayer');
 
-var Pipe = require('./Pipe');
+var pipeFactory = require('./pipeFactory');
 
 var level = {
     /**
@@ -783,7 +667,7 @@ var level = {
      */
     pipesContainer: undefined,
 
-    firstPipeFacing: Pipe.UP,
+    firstPipeFacing: pipeFactory.facing.UP,
 
     nextPipeFacing: 0,
     placedPipesCount: 0,
@@ -816,7 +700,7 @@ var level = {
         // Remove pipes when they're off screen
         if (this.pipesContainer.children.length > 0) {
 
-            if (this.pipesContainer.x < -this.pipesContainer.children[0].x - Pipe.textureWidth) {
+            if (this.pipesContainer.x < -this.pipesContainer.children[0].x - utils.getTexture(settings.textures.PIPE).width) {
                 this.pipesContainer.removeChild(this.pipesContainer.children[0]);
                 this._placeNewPipe(this.placedPipesCount);
             }
@@ -942,16 +826,11 @@ var level = {
      */
     _placeNewPipe: function _placeNewPipe(number) {
         var height = number === 0 ? settings.firstPipeHeight : this._getRandomPipeHeight();
-
-        var pipe = this._createPipe(height, this.nextPipeFacing);
-        pipe.container.x = settings.firstPipeDistance + settings.pipeDistance * number;
-        this.pipesContainer.addChild(pipe.container);
-
+        var pipe = pipeFactory.create(height, this.nextPipeFacing);;
+        pipe.x = settings.firstPipeDistance + settings.pipeDistance * number;
+        this.pipesContainer.addChild(pipe);
         this.nextPipeFacing *= -1;
         this.placedPipesCount++;
-    },
-    _createPipe: function _createPipe(height, direction) {
-        return new Pipe(height, direction);
     },
     _increaseScore: function _increaseScore() {
         audioPlayer.play(audioPlayer.audioFragments.POINT);
@@ -978,7 +857,92 @@ var level = {
 
 module.exports = level;
 
-},{"./Pipe":2,"./audioPlayer":3,"./settings":9,"./utils.js":11}],9:[function(require,module,exports){
+},{"./audioPlayer":2,"./pipeFactory":8,"./settings":9,"./utils.js":11}],8:[function(require,module,exports){
+'use strict';
+
+var settings = require('./settings');
+var utils = require('./utils');
+
+var pipeFactory = {
+        textureWidth: 0,
+
+        facing: {
+                'UP': 1,
+                'DOWN': -1
+        },
+
+        create: function create(height, facing) {
+                this.pipeTexture = utils.getTexture(settings.textures.PIPE);
+                this.pipeTopTexture = utils.getTexture(settings.textures.PIPE_UP);
+                this.pipeBottomTexture = utils.getTexture(settings.textures.PIPE_DOWN);
+
+                var container = new PIXI.Container();
+
+                var totalPlayHeight = settings.playableAreaAboveWater + settings.playableAreaBelowWater;
+
+                if (facing === this.facing.UP) {
+                        container.addChild(this._createUpFacingPipe(height));
+                } else if (facing === this.facing.DOWN) {
+                        container.addChild(this._createDownFacingPipe(height));
+                }
+
+                // Check if we have space for pipe in opposite direction to complete the gap
+                if (height + settings.pipeGapSize < totalPlayHeight) {
+                        // We can fit another pipe opposite to it
+                        var oppositePipeHeight = totalPlayHeight - height - settings.pipeGapSize;
+                        if (facing === this.facing.UP) container.addChild(this._createDownFacingPipe(oppositePipeHeight));
+
+                        if (facing === this.facing.DOWN) container.addChild(this._createUpFacingPipe(oppositePipeHeight));
+                }
+
+                var ceilingSpriteHeight = utils.getTexture(settings.textures.CEILING).height;
+
+                // Store the information of the gap position in the container object for easier collision checks
+                var top = (facing === this.facing.UP ? totalPlayHeight - height - settings.pipeGapSize : height) + ceilingSpriteHeight;
+                var bottom = (facing === this.facing.UP ? totalPlayHeight - height : height + settings.pipeGapSize) + ceilingSpriteHeight;
+                container.gap = { top: top, bottom: bottom };
+
+                return container;
+        },
+        _createUpFacingPipe: function _createUpFacingPipe(height) {
+                var container = new PIXI.Container();
+
+                var pipeTop = new PIXI.Sprite(this.pipeTopTexture);
+                container.addChild(pipeTop);
+
+                var pipePartHeight = height - this.pipeTopTexture.height;
+
+                var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
+                pipe.y = this.pipeTopTexture.height;
+                container.addChild(pipe);
+
+                // Place pipe on the bottom
+                container.y = settings.playableAreaAboveWater + settings.playableAreaBelowWater - height + utils.getTexture(settings.textures.CEILING).height;
+
+                return container;
+        },
+        _createDownFacingPipe: function _createDownFacingPipe(height) {
+                var container = new PIXI.Container();
+
+                var pipePartHeight = height - this.pipeBottomTexture.height;
+
+                var pipe = new PIXI.extras.TilingSprite(this.pipeTexture, this.pipeTexture.width, pipePartHeight);
+                container.addChild(pipe);
+
+                var pipeBottom = new PIXI.Sprite(this.pipeBottomTexture);
+                pipeBottom.y = pipePartHeight;
+                container.addChild(pipeBottom);
+
+                // We can place it against the ceiling
+                container.y = utils.getTexture(settings.textures.CEILING).height;
+
+                return container;
+        }
+};
+
+module.exports = pipeFactory;
+
+},{"./settings":9,"./utils":11}],9:[function(require,module,exports){
 "use strict";
 
 var settings = {

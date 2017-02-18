@@ -3,7 +3,7 @@ let utils = require('./utils.js');
 
 let audioPlayer = require('./audioPlayer');
 
-let Pipe = require('./Pipe');
+let pipeFactory = require('./pipeFactory');
 
 let level = {
     /**
@@ -26,7 +26,7 @@ let level = {
      */
     pipesContainer: undefined,
 
-    firstPipeFacing: Pipe.UP,
+    firstPipeFacing: pipeFactory.facing.UP,
 
     nextPipeFacing: 0,
     placedPipesCount: 0,
@@ -60,7 +60,7 @@ let level = {
         // Remove pipes when they're off screen
         if (this.pipesContainer.children.length > 0) {
 
-            if (this.pipesContainer.x < -this.pipesContainer.children[0].x - Pipe.textureWidth) {
+            if (this.pipesContainer.x < -this.pipesContainer.children[0].x - utils.getTexture(settings.textures.PIPE).width) {
                 this.pipesContainer.removeChild(this.pipesContainer.children[0]);
                 this._placeNewPipe(this.placedPipesCount);
             }
@@ -181,17 +181,11 @@ let level = {
      */
     _placeNewPipe(number) {
         let height = (number === 0) ? settings.firstPipeHeight : this._getRandomPipeHeight();
-
-        let pipe = this._createPipe(height, this.nextPipeFacing);
-        pipe.container.x = settings.firstPipeDistance + settings.pipeDistance * number;
-        this.pipesContainer.addChild(pipe.container);
-
+        let pipe = pipeFactory.create(height, this.nextPipeFacing);;
+        pipe.x = settings.firstPipeDistance + settings.pipeDistance * number;
+        this.pipesContainer.addChild(pipe);
         this.nextPipeFacing *= -1;
         this.placedPipesCount++;
-    },
-
-    _createPipe(height, direction) {
-        return new Pipe(height, direction);
     },
 
     _increaseScore() {
