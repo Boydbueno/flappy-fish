@@ -2,9 +2,9 @@ const settings = {
     /**
      * The location of the assets json
      */
-    assetFile: "assets/assets.json",
+    assetFile: "build/assets/spritesheet/spritesheet.json",
 
-    soundsPath: "assets/sounds/",
+    soundsPath: "build/assets/sfx/",
 
     /**
      * The area that is available above the water
