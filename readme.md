@@ -1,6 +1,8 @@
 # Flappy bird fish
 A flappy bird clone with a small twist. Build using [PixiJS](http://www.pixijs.com/).
 
+![Screenshot](screenshot.jpg)
+
 Best played on Google Chrome or Firefox
 
 ## How to play
