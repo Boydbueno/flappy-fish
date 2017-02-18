@@ -321,6 +321,12 @@ var bird = {
     getLeft: function getLeft() {
         return this.sprite.x - this.sprite.width / 2;
     },
+    getCenter: function getCenter() {
+        return {
+            x: this.sprite.x,
+            y: this.sprite.y
+        };
+    },
 
 
     /**
@@ -520,9 +526,9 @@ var game = {
      */
     _handleCollision: function _handleCollision() {
         // Check if the bird is below or underneath the water
-        if (bird.getTop() < level.getWaterLevel() && bird.isBelowWater) {
+        if (bird.getCenter().y <= level.getWaterLevel() && bird.isBelowWater) {
             bird.leaveWater();
-        } else if (bird.getTop() >= level.getWaterLevel() && !bird.isBelowWater) {
+        } else if (bird.getCenter().y > level.getWaterLevel() && !bird.isBelowWater) {
             bird.enterWater();
         }
 
@@ -839,7 +845,7 @@ var level = {
      * Get the y position of the water
      */
     getWaterLevel: function getWaterLevel() {
-        return settings.playableAreaAboveWater;
+        return settings.playableAreaAboveWater + utils.getTexture(settings.textures.CEILING).height;
     },
     pipeCollision: function pipeCollision(bird) {
         // Because of square collision it can feel unfair when hitting the sides of the pipes while at an angle
@@ -935,8 +941,9 @@ var level = {
      * @private
      */
     _placeNewPipe: function _placeNewPipe(number) {
-        // We need total pipe amount, to calculate position of new one
-        var pipe = this._createPipe(this._getRandomPipeHeight(), this.nextPipeFacing);
+        var height = number === 0 ? settings.firstPipeHeight : this._getRandomPipeHeight();
+
+        var pipe = this._createPipe(height, this.nextPipeFacing);
         pipe.container.x = settings.firstPipeDistance + settings.pipeDistance * number;
         this.pipesContainer.addChild(pipe.container);
 
@@ -985,12 +992,12 @@ var settings = {
     /**
      * The area that is available above the water
      */
-    playableAreaAboveWater: 260,
+    playableAreaAboveWater: 250,
 
     /**
      * The area that is available below the water
      */
-    playableAreaBelowWater: 260,
+    playableAreaBelowWater: 250,
 
     /**
      * The width of the game, filled during init currently
@@ -1053,12 +1060,17 @@ var settings = {
     /**
      * The min height of a pipe (handle with care)
      */
-    minPipeHeight: 280,
+    minPipeHeight: 275,
 
     /**
      * The max height of a pipe (handle with care)
      */
-    maxPipeHeight: 390,
+    maxPipeHeight: 375,
+
+    /**
+     * The height of the first pipe
+     */
+    firstPipeHeight: 320,
 
     pipeCollisionSidesMargin: 6,
 

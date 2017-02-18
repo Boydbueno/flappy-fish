@@ -113,9 +113,9 @@ let game = {
      */
     _handleCollision() {
         // Check if the bird is below or underneath the water
-        if (bird.getTop() < level.getWaterLevel() && bird.isBelowWater) {
+        if (bird.getCenter().y <= level.getWaterLevel() && bird.isBelowWater) {
             bird.leaveWater();
-        } else if (bird.getTop() >= level.getWaterLevel() && !bird.isBelowWater) {
+        } else if (bird.getCenter().y > level.getWaterLevel() && !bird.isBelowWater) {
             bird.enterWater();
         }
 

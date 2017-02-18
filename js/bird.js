@@ -97,6 +97,13 @@ let bird = {
         return this.sprite.x - this.sprite.width / 2;
     },
 
+    getCenter() {
+        return {
+            x: this.sprite.x,
+            y: this.sprite.y
+        }
+    },
+
     /**
      * When the bird enters the water
      */

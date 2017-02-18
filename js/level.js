@@ -88,7 +88,7 @@ let level = {
      * Get the y position of the water
      */
     getWaterLevel() {
-        return settings.playableAreaAboveWater;
+        return settings.playableAreaAboveWater + utils.getTexture(settings.textures.CEILING).height;
     },
 
     pipeCollision(bird) {
@@ -180,8 +180,9 @@ let level = {
      * @private
      */
     _placeNewPipe(number) {
-        // We need total pipe amount, to calculate position of new one
-        let pipe = this._createPipe(this._getRandomPipeHeight(), this.nextPipeFacing);
+        let height = (number === 0) ? settings.firstPipeHeight : this._getRandomPipeHeight();
+
+        let pipe = this._createPipe(height, this.nextPipeFacing);
         pipe.container.x = settings.firstPipeDistance + settings.pipeDistance * number;
         this.pipesContainer.addChild(pipe.container);
 

@@ -9,12 +9,12 @@ const settings = {
     /**
      * The area that is available above the water
      */
-    playableAreaAboveWater: 260,
+    playableAreaAboveWater: 250,
 
     /**
      * The area that is available below the water
      */
-    playableAreaBelowWater: 260,
+    playableAreaBelowWater: 250,
 
     /**
      * The width of the game, filled during init currently
@@ -77,12 +77,17 @@ const settings = {
     /**
      * The min height of a pipe (handle with care)
      */
-    minPipeHeight: 280,
+    minPipeHeight: 275,
 
     /**
      * The max height of a pipe (handle with care)
      */
-    maxPipeHeight: 390,
+    maxPipeHeight: 375,
+
+    /**
+     * The height of the first pipe
+     */
+    firstPipeHeight: 320,
 
     pipeCollisionSidesMargin: 6,
 
