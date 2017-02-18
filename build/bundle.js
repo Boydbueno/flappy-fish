@@ -1036,8 +1036,16 @@ var settings = {
      */
     firstPipeHeight: 320,
 
+    /**
+     * Because collision is done with squares it can feel unfair at times
+     * This property reduces the pipe collider on the left and right side
+     */
     pipeCollisionSidesMargin: 6,
 
+    /**
+     * Because collision is done with squares it can feel unfair at times
+     * This property makes vertical gap in pipes a bit bigger then they seem
+     */
     pipeCollisionGapMargin: 3,
 
     /**
